@@ -1,12 +1,12 @@
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { Section } from './section';
+import { Section } from '@/components/section';
 
-export default function AboutSection() {
+export default function AboutPage() {
   const profilePic = PlaceHolderImages.find((img) => img.id === 'profile-picture');
 
   return (
-    <Section id="about" className="bg-card/30 backdrop-blur-sm">
+    <Section id="about" className="py-12 md:py-24">
       <div className="grid items-center gap-12 md:grid-cols-2">
         <div className="relative mx-auto h-64 w-64 md:h-80 md:w-80">
           {profilePic && (
@@ -24,7 +24,7 @@ export default function AboutSection() {
         </div>
 
         <div className="space-y-4">
-          <h2 className="font-headline text-4xl font-bold text-primary">About Me</h2>
+          <h1 className="font-headline text-4xl font-bold text-primary">About Me</h1>
           <p className="text-lg text-foreground/80">
             I am a passionate Full-Stack Developer with a knack for creating elegant
             solutions in the least amount of time. I graduated with a degree in
