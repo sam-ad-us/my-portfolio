@@ -82,7 +82,7 @@ export default function AboutPage() {
                <div className="rounded-lg border bg-card/50 p-4">
                 <h3 className="text-xl font-semibold text-foreground">Diploma in Electrical Engineering</h3>
                 <p className="text-md text-foreground/80">Jamia Millia Isalamia, New Delhi</p>
-                <p className="text-sm text-muted-foreground">2018 - 2020</p>
+                <p className="text-sm text-muted-foreground">2021-2023</p>
               </div>
             </div>
           </div>
