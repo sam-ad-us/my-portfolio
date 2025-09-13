@@ -9,7 +9,7 @@ const socialLinks = [
   { name: 'LinkedIn', icon: Linkedin, href: 'https://www.linkedin.com/in/abdussamad001' },
   { name: 'Twitter', icon: Twitter, href: '#' },
   { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/sam_ad_us?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==' },
-  { name: 'Email', icon: Mail, href: 'mailto:abdussamadsid001@gmail.com' },
+  { name: 'Email', icon: Mail, href: 'mailto:abdussamad.net.0@gmail.com' },
 ];
 
 export default function ContactPage() {
