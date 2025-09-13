@@ -3,7 +3,6 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
-import AnimatedBackground from '@/components/animated-background';
 
 export const metadata: Metadata = {
   title: 'Portfolio',
@@ -30,7 +29,6 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <AnimatedBackground />
         <div className="relative z-10 flex min-h-screen flex-col">
           <Header />
           <main className="flex-1">{children}</main>
