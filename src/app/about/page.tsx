@@ -80,7 +80,7 @@ export default function AboutPage() {
                 <p className="text-sm text-muted-foreground">2025-2027</p>
               </div>
                <div className="rounded-lg border bg-card/50 p-4">
-                <h3 className="text-xl font-semibold text-foreground">Higher Secondary Education</h3>
+                <h3 className="text-xl font-semibold text-foreground">Diploma in Electrical Engineering</h3>
                 <p className="text-md text-foreground/80">School Name, City, State</p>
                 <p className="text-sm text-muted-foreground">2018 - 2020</p>
               </div>
