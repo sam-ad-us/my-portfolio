@@ -38,6 +38,9 @@ export default function AboutPage() {
           <p className="text-lg text-foreground/80">
             Beyond coding, I am also deeply passionate about writing. I have authored several books, including The Art of Self-Growth and The 48 Fundamental Principles of Power, along with a number of novels that are available on Amazon. Writing allows me to express creativity in a different form and connect with people through ideas and stories.
           </p>
+           <p className="text-lg text-foreground/80">
+            I thrive on challenges, enjoy continuous learning, and aim to create impactful digital solutions that inspire and empower people.
+          </p>
         </div>
       </div>
     </Section>
