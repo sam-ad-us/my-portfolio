@@ -36,8 +36,7 @@ export default function AboutPage() {
             My expertise spans both front-end and back-end development. On the front end, I focus on creating elegant, responsive, and intuitive user interfaces that deliver seamless user experiences. On the back end, I specialize in building secure, efficient, and robust systems that power these applications. I enjoy solving complex problems with simple, effective solutions and continuously explore new technologies and frameworks to stay ahead in the ever-evolving tech world.
           </p>
           <p className="text-lg text-foreground/80">
-            When I'm not coding, I enjoy exploring the outdoors, contributing to
-            open-source projects, and brewing the perfect cup of coffee.
+            Beyond coding, I am also deeply passionate about writing. I have authored several books, including The Art of Self-Growth and The 48 Fundamental Principles of Power, along with a number of novels that are available on Amazon. Writing allows me to express creativity in a different form and connect with people through ideas and stories.
           </p>
         </div>
       </div>
