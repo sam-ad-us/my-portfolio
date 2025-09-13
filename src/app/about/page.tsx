@@ -26,10 +26,11 @@ export default function AboutPage() {
         <div className="space-y-4">
           <h1 className="font-headline text-4xl font-bold text-primary">About Me</h1>
           <p className="text-lg text-foreground/80">
-            I am a passionate Full-Stack Developer with a knack for creating elegant
-            solutions in the least amount of time. I graduated with a degree in
-            Computer Science and have since been honing my skills in web
-            development.
+            I am a passionate Software Engineer and Full-Stack Developer with
+            over 2 years of experience in building dynamic, user-friendly, and
+            scalable web applications. Currently pursuing my B.Tech in Computer
+            Science, I have worked on a wide range of projects, many of which
+            you can explore in the projects section of this portfolio.
           </p>
           <p className="text-lg text-foreground/80">
             My expertise lies in building robust back-end systems and beautiful,
