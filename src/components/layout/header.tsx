@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { Menu, TerminalSquare } from 'lucide-react';
 import Link from 'next/link';
-import * a..s React from 'react';
+import * as React from 'react';
 
 const mainNav = [
   { name: 'About', href: '#about' },
