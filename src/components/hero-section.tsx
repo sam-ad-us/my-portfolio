@@ -40,7 +40,7 @@ export default function HeroSection() {
             </Link>
           </Button>
           <Button variant="outline" size="lg" asChild>
-            <Link href="#" target="_blank" rel="noopener noreferrer">
+            <Link href="https://www.linkedin.com/in/abdussamad001" target="_blank" rel="noopener noreferrer">
               <Linkedin className="mr-2 h-5 w-5" />
               LinkedIn
             </Link>
