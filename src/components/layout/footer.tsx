@@ -6,7 +6,7 @@ const socialLinks = [
   { name: 'GitHub', icon: Github, href: 'https://github.com/sam-ad-us' },
   { name: 'LinkedIn', icon: Linkedin, href: 'https://www.linkedin.com/in/abdussamad001' },
   { name: 'Twitter', icon: Twitter, href: '#' },
-  { name: 'Instagram', icon: Instagram, href: '#' },
+  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/sam_ad_us?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==' },
 ];
 
 export default function Footer() {
