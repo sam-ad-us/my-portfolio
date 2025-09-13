@@ -1,26 +1,54 @@
+"use client";
+
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Section } from '@/components/section';
+import { Button } from '@/components/ui/button';
+import { Download, FolderKanban } from 'lucide-react';
+import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AboutPage() {
   const profilePic = PlaceHolderImages.find((img) => img.id === 'profile-picture');
+  const { toast } = useToast();
+
+  const handleCvClick = () => {
+    toast({
+      title: 'Download Not Available',
+      description: 'The CV is not available for download at the moment.',
+    });
+  };
 
   return (
     <Section id="about" className="py-12 md:py-24">
       <div className="grid items-center gap-12 md:grid-cols-2">
-        <div className="relative mx-auto h-64 w-64 md:h-80 md:w-80">
-          {profilePic && (
-            <Image
-              src={profilePic.imageUrl}
-              alt="Profile Picture"
-              width={400}
-              height={400}
-              data-ai-hint={profilePic.imageHint}
-              className="rounded-full object-cover shadow-lg shadow-primary/20"
-            />
-          )}
-           <div className="absolute inset-0 -z-10 animate-pulse rounded-full border-4 border-primary/50" />
-           <div className="absolute inset-2 -z-10 animate-pulse rounded-full border-2 border-primary/30" style={{ animationDelay: '200ms' }} />
+        <div className="flex flex-col items-center gap-8">
+          <div className="relative h-64 w-64 md:h-80 md:w-80">
+            {profilePic && (
+              <Image
+                src={profilePic.imageUrl}
+                alt="Profile Picture"
+                width={400}
+                height={400}
+                data-ai-hint={profilePic.imageHint}
+                className="rounded-full object-cover shadow-lg shadow-primary/20"
+              />
+            )}
+            <div className="absolute inset-0 -z-10 animate-pulse rounded-full border-4 border-primary/50" />
+            <div className="absolute inset-2 -z-10 animate-pulse rounded-full border-2 border-primary/30" style={{ animationDelay: '200ms' }} />
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button size="lg" onClick={handleCvClick}>
+              <Download className="mr-2 h-5 w-5" />
+              Download CV
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <Link href="/projects">
+                <FolderKanban className="mr-2 h-5 w-5" />
+                Projects
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -38,7 +66,7 @@ export default function AboutPage() {
           <p className="text-lg text-foreground/80">
             Beyond coding, I am also deeply passionate about writing. I have authored several books, including The Art of Self-Growth and The 48 Fundamental Principles of Power, along with a number of novels that are available on Amazon. Writing allows me to express creativity in a different form and connect with people through ideas and stories.
           </p>
-           <p className="text-lg text-foreground/80">
+          <p className="text-lg text-foreground/80">
             I thrive on challenges, enjoy continuous learning, and aim to create impactful digital solutions that inspire and empower people.
           </p>
         </div>
