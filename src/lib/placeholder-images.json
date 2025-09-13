@@ -29,6 +29,12 @@
       "description": "Placeholder image for the fourth project.",
       "imageUrl": "https://picsum.photos/seed/5/600/400",
       "imageHint": "data network"
+    },
+    {
+      "id": "project-5",
+      "description": "Placeholder image for the RB Publication project.",
+      "imageUrl": "https://picsum.photos/seed/6/600/400",
+      "imageHint": "book publication"
     }
   ]
 }
