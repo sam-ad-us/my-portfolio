@@ -34,7 +34,7 @@ export default function HeroSection() {
             Download CV
           </Button>
           <Button variant="outline" size="lg" asChild>
-            <Link href="#" target="_blank" rel="noopener noreferrer">
+            <Link href="https://github.com/sam-ad-us" target="_blank" rel="noopener noreferrer">
               <Github className="mr-2 h-5 w-5" />
               GitHub
             </Link>
