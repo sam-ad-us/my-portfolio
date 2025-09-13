@@ -33,10 +33,7 @@ export default function AboutPage() {
             you can explore in the projects section of this portfolio.
           </p>
           <p className="text-lg text-foreground/80">
-            My expertise lies in building robust back-end systems and beautiful,
-            responsive front-end interfaces. I thrive on challenges and am
-            always eager to learn new technologies and frameworks to stay at the
-            forefront of the ever-evolving tech landscape.
+            My expertise spans both front-end and back-end development. On the front end, I focus on creating elegant, responsive, and intuitive user interfaces that deliver seamless user experiences. On the back end, I specialize in building secure, efficient, and robust systems that power these applications. I enjoy solving complex problems with simple, effective solutions and continuously explore new technologies and frameworks to stay ahead in the ever-evolving tech world.
           </p>
           <p className="text-lg text-foreground/80">
             When I'm not coding, I enjoy exploring the outdoors, contributing to
