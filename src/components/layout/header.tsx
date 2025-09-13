@@ -9,7 +9,7 @@ import * as React from 'react';
 
 const mainNav = [
   { name: 'About', href: '/about' },
-  { name: 'Projects', href: '#projects' },
+  { name: 'Projects', href: '/projects' },
   { name: 'Skills', href: '/skills' },
   { name: 'Contact', href: '#contact' },
   { name: 'CV Enhancer', href: '/cv-enhancer' },
