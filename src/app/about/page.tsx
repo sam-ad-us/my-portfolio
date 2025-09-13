@@ -22,7 +22,7 @@ export default function AboutPage() {
   return (
     <Section id="about" className="py-12 md:py-24">
       <div className="grid items-start gap-12 md:grid-cols-2">
-        <div className="flex flex-col items-center gap-8 sticky top-24">
+        <div className="flex flex-col items-center gap-8 md:sticky md:top-24">
           <div className="relative h-64 w-64 md:h-80 md:w-80">
             {profilePic && (
               <Image
@@ -77,7 +77,7 @@ export default function AboutPage() {
               <div className="rounded-lg border bg-card/50 p-4">
                 <h3 className="text-xl font-semibold text-foreground">Bachelor of Technology in Computer Science</h3>
                 <p className="text-md text-foreground/80">MANUU, Hydrabad, Telangana</p>
-                <p className="text-sm text-muted-foreground">2025-2027</p>
+                <p className="text-sm text-muted-foreground">In Progress (2025-2028)</p>
               </div>
                <div className="rounded-lg border bg-card/50 p-4">
                 <h3 className="text-xl font-semibold text-foreground">Diploma in Electrical Engineering</h3>
