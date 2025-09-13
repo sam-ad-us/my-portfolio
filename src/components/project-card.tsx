@@ -1,3 +1,5 @@
+"use client";
+
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 import {
@@ -12,6 +14,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import Link from 'next/link';
 import { ArrowUpRight, Github } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 type ProjectCardProps = {
   id: string;
@@ -31,6 +34,14 @@ export default function ProjectCard({
   liveLink,
 }: ProjectCardProps) {
   const projectImage = PlaceHolderImages.find((img) => img.id === id);
+  const { toast } = useToast();
+
+  const handleLiveDemoClick = () => {
+    toast({
+      title: 'Web In Progress',
+      description: 'This project is not yet deployed. Please check back later.',
+    });
+  };
 
   return (
     <Card className="flex h-full transform-gpu flex-col overflow-hidden bg-card/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20">
@@ -65,11 +76,17 @@ export default function ProjectCard({
             <Github /> Code
           </Link>
         </Button>
-        <Button asChild>
-          <Link href={liveLink} target="_blank" rel="noopener noreferrer">
+        {liveLink === '#' ? (
+          <Button onClick={handleLiveDemoClick}>
             Live Demo <ArrowUpRight />
-          </Link>
-        </Button>
+          </Button>
+        ) : (
+          <Button asChild>
+            <Link href={liveLink} target="_blank" rel="noopener noreferrer">
+              Live Demo <ArrowUpRight />
+            </Link>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
