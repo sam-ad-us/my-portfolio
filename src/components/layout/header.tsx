@@ -12,7 +12,6 @@ const mainNav = [
   { name: 'Projects', href: '/projects' },
   { name: 'Skills', href: '/skills' },
   { name: 'Contact', href: '/contact' },
-  { name: 'CV Enhancer', href: '/cv-enhancer' },
 ];
 
 export default function Header() {
