@@ -1,8 +1,20 @@
+"use client";
+
 import { Button } from '@/components/ui/button';
 import { Download, Github, Linkedin } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 export default function HeroSection() {
+  const { toast } = useToast();
+
+  const handleCvClick = () => {
+    toast({
+      title: 'Download Not Available',
+      description: 'Please check the about section for more information.',
+    });
+  };
+
   return (
     <section className="flex min-h-screen w-full flex-col items-center justify-center text-center">
       <div className="container mx-auto max-w-4xl px-4">
@@ -17,11 +29,9 @@ export default function HeroSection() {
           Passionate about clean code and modern web technologies.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
-          <Button size="lg" asChild>
-            <a href="/cv.pdf" download>
-              <Download className="mr-2 h-5 w-5" />
-              Download CV
-            </a>
+          <Button size="lg" onClick={handleCvClick}>
+            <Download className="mr-2 h-5 w-5" />
+            Download CV
           </Button>
           <Button variant="outline" size="lg" asChild>
             <Link href="#" target="_blank" rel="noopener noreferrer">
