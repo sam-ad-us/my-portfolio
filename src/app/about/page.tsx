@@ -77,7 +77,7 @@ export default function AboutPage() {
               <div className="rounded-lg border bg-card/50 p-4">
                 <h3 className="text-xl font-semibold text-foreground">Bachelor of Technology in Computer Science</h3>
                 <p className="text-md text-foreground/80">University Name, City, State</p>
-                <p className="text-sm text-muted-foreground">2020 - 2024</p>
+                <p className="text-sm text-muted-foreground">2025-2027</p>
               </div>
                <div className="rounded-lg border bg-card/50 p-4">
                 <h3 className="text-xl font-semibold text-foreground">Higher Secondary Education</h3>
