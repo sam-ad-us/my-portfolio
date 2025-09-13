@@ -10,7 +10,7 @@ export default function HeroSection() {
           Abdus Samad
         </h1>
         <p className="mt-4 font-headline text-2xl font-medium text-foreground md:text-4xl">
-          Full-Stack Developer
+          Software Engineer
         </p>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-foreground/80">
           I build dynamic, responsive, and user-friendly web applications.
