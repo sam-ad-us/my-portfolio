@@ -1,9 +1,5 @@
 "use client";
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-
 import {
   Form,
   FormControl,
@@ -18,33 +14,16 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Section } from './section';
 import { Send } from 'lucide-react';
-
-const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters.'),
-  email: z.string().email('Please enter a valid email.'),
-  message: z.string().min(10, 'Message must be at least 10 characters.'),
-});
+import { useState } from 'react';
+import Link from 'next/link';
 
 export default function ContactSection() {
-  const { toast } = useToast();
+  const [name, setName] = useState('');
+  const [message, setMessage] = useState('');
+  const recipientEmail = 'abdussamad.net.0@gmail.com';
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      message: '',
-    },
-  });
+  const mailtoHref = `mailto:${recipientEmail}?subject=Contact from Portfolio: ${encodeURIComponent(name)}&body=${encodeURIComponent(message)}`;
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast({
-      title: 'Message Sent!',
-      description: "Thanks for reaching out. I'll get back to you soon.",
-    });
-    form.reset();
-  }
 
   return (
     <Section id="contact">
@@ -59,56 +38,37 @@ export default function ContactSection() {
 
       <Card className="mx-auto mt-12 max-w-2xl bg-card/50 shadow-lg shadow-accent/10">
         <CardContent className="p-8">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Your Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="your.email@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="message"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Message</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Tell me about your project or idea..."
-                        className="min-h-[120px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                Send Message <Send className="ml-2 h-5 w-5" />
+           <form className="space-y-6">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-foreground/80 mb-1">Name</label>
+                <Input
+                  id="name"
+                  placeholder="Your Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+               <div>
+                <label htmlFor="email" className="block text-sm font-medium text-foreground/80 mb-1">Email</label>
+                <Input id="email" placeholder="your.email@example.com (for my reply)" />
+              </div>
+              <div>
+                 <label htmlFor="message" className="block text-sm font-medium text-foreground/80 mb-1">Message</label>
+                <Textarea
+                  id="message"
+                  placeholder="Tell me about your project or idea..."
+                  className="min-h-[120px]"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
+              </div>
+
+              <Button asChild size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                <Link href={mailtoHref}>
+                  Send Message <Send className="ml-2 h-5 w-5" />
+                </Link>
               </Button>
             </form>
-          </Form>
         </CardContent>
       </Card>
     </Section>
