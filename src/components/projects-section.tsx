@@ -38,14 +38,6 @@ const projects = [
     githubLink: '#',
     liveLink: '#',
   },
-  {
-    id: 'project-5',
-    title: 'RB Publication',
-    description: 'A modern publication website for showcasing articles, books, and author profiles. Built with Next.js for a fast and responsive user experience.',
-    techStack: ['Next.js', 'React', 'Tailwind CSS'],
-    githubLink: '#',
-    liveLink: 'https://rb-publication.vercel.app/',
-  },
 ];
 
 export default function ProjectsSection() {
