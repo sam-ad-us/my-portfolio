@@ -18,7 +18,7 @@ export default function HeroSection() {
   return (
     <section className="flex min-h-screen w-full flex-col items-center justify-center text-center">
       <div className="container mx-auto max-w-4xl px-4">
-        <p className="mb-2 text-lg text-foreground/80">Hi I'm</p>
+        <p className="mb-2 text-lg text-primary drop-shadow-[0_0_8px_hsl(var(--primary))]">Hi I'm</p>
         <h1 className="font-headline text-5xl font-bold tracking-tight text-primary drop-shadow-[0_0_8px_hsl(var(--primary))] md:text-7xl">
           Abdus Samad
         </h1>
