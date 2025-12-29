@@ -4,7 +4,7 @@ import { addDoc, collection, deleteDoc, doc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -29,7 +29,7 @@ const projectFormSchema = z.object({
     ),
 }).refine(data => data.imageUrl || data.imageFile, {
   message: "Either an image URL or an image file must be provided.",
-  path: ["imageUrl"], // Point error to a relevant field
+  path: ["imageUrl"],
 });
 
 export type ProjectFormState = {
@@ -51,7 +51,7 @@ export async function addProject(
     techStack: formData.get('techStack'),
     liveLink: formData.get('liveLink'),
     githubLink: formData.get('githubLink'),
-    imageUrl: imageUrlValue ? String(imageUrlValue) : undefined,
+    imageUrl: imageUrlValue ? String(imageUrlValue) : '',
     imageFile: imageFile instanceof File && imageFile.size > 0 ? imageFile : undefined,
   });
 
@@ -68,7 +68,6 @@ export async function addProject(
 
   try {
     if (file) {
-        const storage = getStorage();
         const storageRef = ref(storage, `projects/${Date.now()}_${file.name}`);
         const fileBuffer = await file.arrayBuffer();
         await uploadBytes(storageRef, fileBuffer, { contentType: file.type });
@@ -109,7 +108,6 @@ export async function deleteProject(projectId: string, imageUrl: string): Promis
     await deleteDoc(doc(db, 'projects', projectId));
 
     if (imageUrl && imageUrl.includes('firebasestorage.googleapis.com')) {
-      const storage = getStorage();
       const imageRef = ref(storage, imageUrl);
       await deleteObject(imageRef);
     }
