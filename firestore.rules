@@ -69,6 +69,7 @@ service cloud.firestore {
     /**
      * @description Acts as a secure "drop-box". Anyone can create a message,
      * but no one can read, update, or delete them from the client.
+     * Admin access for reading should be handled via server-side logic (e.g., Cloud Functions).
      */
     match /contact_messages/{contactMessageId} {
       allow create: if true;
