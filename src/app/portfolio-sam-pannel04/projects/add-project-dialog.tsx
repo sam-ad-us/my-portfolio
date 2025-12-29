@@ -14,9 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { addProject, type ProjectFormState } from './actions';
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 type AddProjectDialogProps = {
@@ -40,7 +40,7 @@ function SubmitButton() {
 }
 
 export function AddProjectDialog({ children, open, onOpenChange }: AddProjectDialogProps) {
-    const [state, formAction] = useFormState(addProject, initialState);
+    const [state, formAction] = useActionState(addProject, initialState);
     const formRef = useRef<HTMLFormElement>(null);
     const { toast } = useToast();
 
