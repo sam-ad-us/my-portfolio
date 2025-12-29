@@ -50,7 +50,12 @@ export default function ManageAboutPage() {
         if (docSnap.exists()) {
           const data = docSnap.data() as UserProfile;
           setProfile(data);
-          setEducation(data.education || []);
+          // Defensive check to ensure education is an array
+          if (Array.isArray(data.education)) {
+            setEducation(data.education);
+          } else {
+            setEducation([]);
+          }
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
