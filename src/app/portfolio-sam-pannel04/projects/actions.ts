@@ -18,18 +18,27 @@ const projectFormSchema = z.object({
   imageUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
   imageFile: z
     .any()
-    .optional()
-    .refine(
-      (file) => !file || file.size <= MAX_FILE_SIZE,
-      `Max image size is 5MB.`
-    )
-    .refine(
-      (file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type),
-      "Only .jpg, .jpeg, .png and .webp formats are supported."
-    ),
-}).refine(data => data.imageUrl || data.imageFile, {
+    .optional(),
+}).refine(data => {
+    const file = data.imageFile;
+    if (!file || file.size === 0) return !!data.imageUrl; // If no file, imageUrl must be present
+    if (!data.imageUrl && file.size === 0) return false; // If no imageUrl and no file, it's invalid
+    return true;
+}, {
   message: "Either an image URL or an image file must be provided.",
   path: ["imageUrl"],
+}).refine(data => {
+    const file = data.imageFile;
+    return !file || file.size === 0 || file.size <= MAX_FILE_SIZE;
+}, {
+    message: `Max image size is 5MB.`,
+    path: ['imageFile'],
+}).refine(data => {
+    const file = data.imageFile;
+    return !file || file.size === 0 || ACCEPTED_IMAGE_TYPES.includes(file.type);
+}, {
+    message: "Only .jpg, .jpeg, .png and .webp formats are supported.",
+    path: ['imageFile'],
 });
 
 export type ProjectFormState = {
@@ -42,31 +51,30 @@ export async function addProject(
   prevState: ProjectFormState,
   formData: FormData
 ): Promise<ProjectFormState> {
-  const imageFile = formData.get('imageFile');
-  const imageUrlValue = formData.get('imageUrl');
-
-  const validatedFields = projectFormSchema.safeParse({
-    title: formData.get('title'),
-    description: formData.get('description'),
-    techStack: formData.get('techStack'),
-    liveLink: formData.get('liveLink'),
-    githubLink: formData.get('githubLink'),
-    imageUrl: imageUrlValue ? String(imageUrlValue) : '',
-    imageFile: imageFile instanceof File && imageFile.size > 0 ? imageFile : undefined,
-  });
-
-  if (!validatedFields.success) {
-    return {
-      success: false,
-      message: 'Please check your input.',
-      errors: validatedFields.error.flatten().fieldErrors,
-    };
-  }
-
-  const { techStack, imageFile: file, imageUrl: providedImageUrl, ...rest } = validatedFields.data;
-  let finalImageUrl = providedImageUrl;
-
   try {
+    const imageFile = formData.get('imageFile');
+    
+    const validatedFields = projectFormSchema.safeParse({
+      title: formData.get('title'),
+      description: formData.get('description'),
+      techStack: formData.get('techStack'),
+      liveLink: formData.get('liveLink'),
+      githubLink: formData.get('githubLink'),
+      imageUrl: formData.get('imageUrl'),
+      imageFile: imageFile instanceof File && imageFile.size > 0 ? imageFile : undefined,
+    });
+
+    if (!validatedFields.success) {
+      return {
+        success: false,
+        message: 'Please check your input.',
+        errors: validatedFields.error.flatten().fieldErrors,
+      };
+    }
+
+    const { techStack, imageFile: file, imageUrl: providedImageUrl, ...rest } = validatedFields.data;
+    let finalImageUrl = providedImageUrl;
+
     if (file) {
         const storageRef = ref(storage, `projects/${Date.now()}_${file.name}`);
         const fileBuffer = await file.arrayBuffer();
@@ -97,7 +105,7 @@ export async function addProject(
     
     return { success: true, message: 'Project added successfully!' };
   } catch (error: unknown) {
-    console.error('Error adding project:', error);
+    console.error("SERVER_ACTION_ERROR:", error); // For server-side debugging
     const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';
     return { success: false, message: `Failed to add project. ${errorMessage}` };
   }
