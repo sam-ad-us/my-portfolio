@@ -1,14 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import ImageKit from 'imagekit';
 import { adminDb } from '@/lib/firebase-admin';
-
-const imagekit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
-});
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 export type ProjectFormState = {
   success: boolean;
@@ -26,7 +21,7 @@ export async function addProject(
     const liveLink = formData.get('liveLink') as string;
     const githubLink = formData.get('githubLink') as string;
     const imageFile = formData.get('imageFile') as File | null;
-    const imageUrlFromForm = formData.get('imageUrl') as string | null;
+    let imageUrlFromForm = formData.get('imageUrl') as string | null;
 
     if (!title || !description || !techStack) {
       return { success: false, message: 'Title, Description, and Tech Stack are required.' };
@@ -35,25 +30,25 @@ export async function addProject(
     let finalImageUrl = imageUrlFromForm;
 
     if (imageFile && imageFile.size > 0) {
-       try {
-        const buffer = Buffer.from(await imageFile.arrayBuffer());
-        const response = await imagekit.upload({
-            file: buffer,
-            fileName: imageFile.name,
-            folder: '/portfolio-projects/',
-        });
-        finalImageUrl = response.url;
-       } catch (uploadError) {
-         console.error("SERVER_ACTION_ERROR (ImageKit Upload):", uploadError);
-         const errorMessage = uploadError instanceof Error ? uploadError.message : 'An unknown error occurred during file upload.';
-         return { success: false, message: `Failed to upload image. ${errorMessage}` };
-       }
+      try {
+        const storageRef = ref(storage, `portfolio-projects/${Date.now()}_${imageFile.name}`);
+        const snapshot = await uploadBytes(storageRef, imageFile);
+        finalImageUrl = await getDownloadURL(snapshot.ref);
+      } catch (uploadError: any) {
+         if (uploadError.code === 'storage/unknown') {
+           console.error("CORS_ERROR (Firebase Storage):", "Please configure CORS on your Firebase Storage bucket.");
+           return { success: false, message: 'Image upload failed due to a server configuration issue. Please check the CORS settings on your Firebase Storage bucket.'};
+         }
+        console.error("SERVER_ACTION_ERROR (Firebase Storage Upload):", uploadError);
+        const errorMessage = uploadError.message || 'An unknown error occurred during file upload.';
+        return { success: false, message: `Failed to upload image. ${errorMessage}` };
+      }
     }
 
     if (!finalImageUrl) {
-        return { success: false, message: 'An image URL or an uploaded image file is required.' };
+      return { success: false, message: 'An image URL or an uploaded image file is required.' };
     }
-    
+
     const techStackArray = techStack.split(',').map((tech) => tech.trim());
     
     try {
@@ -66,10 +61,9 @@ export async function addProject(
         imageUrl: finalImageUrl,
         createdAt: new Date(),
       });
-    } catch (dbError) {
+    } catch (dbError: any) {
       console.error("SERVER_ACTION_ERROR (Firestore Write):", dbError);
-      const errorMessage = dbError instanceof Error ? dbError.message : 'An unknown error occurred during database write.';
-      return { success: false, message: `Failed to save project to database. ${errorMessage}` };
+      return { success: false, message: `Failed to save project to database. Firestore security rules might be preventing access.` };
     }
 
     revalidatePath('/portfolio-sam-pannel04/projects');
@@ -85,20 +79,21 @@ export async function addProject(
   }
 }
 
+
 export async function deleteProject(projectId: string, imageUrl: string): Promise<{ success: boolean; message: string }> {
   try {
     await adminDb.collection('projects').doc(projectId).delete();
 
-    if (imageUrl && imageUrl.includes(process.env.IMAGEKIT_URL_ENDPOINT!)) {
+    if (imageUrl) {
       try {
-        const files = await imagekit.listFiles({
-          searchQuery: `url = "${imageUrl}"`
-        });
-        if (files && files.length > 0) {
-          await imagekit.deleteFile(files[0].fileId);
+        const imageRef = ref(storage, imageUrl);
+        await deleteObject(imageRef);
+      } catch (storageError: any) {
+        if (storageError.code === 'storage/object-not-found') {
+          console.warn(`Image not found in Firebase Storage, but proceeding with Firestore deletion: ${imageUrl}`);
+        } else {
+           throw storageError;
         }
-      } catch (imageKitError) {
-        console.warn(`Could not delete image from ImageKit: ${imageUrl}. It might have been already deleted or the URL is incorrect.`, imageKitError);
       }
     }
 
@@ -107,9 +102,9 @@ export async function deleteProject(projectId: string, imageUrl: string): Promis
     revalidatePath('/');
     
     return { success: true, message: 'Project deleted successfully!' };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting project:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';
+    const errorMessage = error.message || 'An unknown server error occurred.';
     return { success: false, message: `Failed to delete project. ${errorMessage}` };
   }
 }
