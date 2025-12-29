@@ -19,19 +19,10 @@ export default function LoginPage() {
   const adminUid = 'emM4KrlWNMR9Vhh7uCMmH5D6t362';
 
   useEffect(() => {
-    if (!loading && user) {
-      if (user.uid === adminUid) {
-        router.replace('/portfolio-sam-pannel04');
-      } else {
-        toast({
-          title: 'Not Authorized',
-          description: 'You do not have permission to access this area.',
-          variant: 'destructive',
-        });
-        auth.signOut();
-      }
+    if (!loading && user?.uid === adminUid) {
+      router.replace('/portfolio-sam-pannel04');
     }
-  }, [user, loading, router, toast]);
+  }, [user, loading, router]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,20 +41,12 @@ export default function LoginPage() {
     }
   };
 
-  if (loading) {
+  if (loading || (!loading && user?.uid === adminUid)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div>Loading...</div>
       </div>
     );
-  }
-
-  if (user) {
-    return (
-        <div className="flex min-h-screen items-center justify-center">
-            <div>Redirecting...</div>
-        </div>
-    )
   }
 
   return (

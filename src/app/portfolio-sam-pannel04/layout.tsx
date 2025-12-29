@@ -41,7 +41,7 @@ export default function AdminLayout({
         description: 'You do not have permission to access this page.',
         variant: 'destructive',
       });
-      router.push('/');
+      router.push('/'); // Redirect non-admin users away
       setIsAuthorized(false);
     } else {
       setIsAuthorized(true);
@@ -51,7 +51,7 @@ export default function AdminLayout({
   if (loading || !isAuthorized) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div>{loading ? 'Loading...' : 'Redirecting...'}</div>
+        <div>{loading ? 'Loading...' : 'Authorizing...'}</div>
       </div>
     );
   }
