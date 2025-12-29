@@ -1,56 +1,62 @@
 /**
- * Core Philosophy: This ruleset supports a public-facing portfolio application.
- * Most data, such as projects and skills, is publicly readable. Write access
- * is strictly controlled and granted only to a designated administrator.
+ * Core Philosophy:
+ * This ruleset supports a public-facing portfolio application.
+ * Most content (projects, skills, profiles) is publicly readable.
+ * All sensitive write operations are strictly controlled using
+ * Role-Based Access Control (RBAC).
+ *
+ * Data Structure:
+ * The database uses a flat structure with the following top-level collections:
+ * /projects, /skills, /user_profiles, and /contact_messages.
+ * This avoids nested reads and keeps security rules fast and simple.
  *
  * Key Security Decisions:
- * - Admin Role: A specific Firebase Auth UID is designated as the administrator.
- *   This user has full create, update, and delete permissions on content collections.
- * - Public Read-Only Content: The /projects and /skills collections are publicly
- *   readable but writable only by the admin.
- * - User Profile Ownership: User profiles are publicly readable, but a user can
- *   only write to their own profile document.
- * - Private "Drop-Box": The /contact_messages collection allows anyone to create
- *   a message, but no one can read them via the client, ensuring privacy.
+ * - Admin Role: A single Firebase Auth UID is designated as the administrator.
+ *   This user has full write access to content collections.
+ * - Public Read-Only Content: Portfolio content is readable by anyone.
+ * - Ownership-Based Writes: Users may only modify their own profile document.
+ * - Private Drop-Box Pattern: Contact messages can be created by anyone
+ *   but are unreadable from the client for privacy and security.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --------------------------------------------------------------------
+    // --------------------------------------------------
     // Helper Functions
-    // --------------------------------------------------------------------
+    // --------------------------------------------------
 
     /**
-     * Checks if the user is authenticated.
+     * Checks whether a user is authenticated.
      */
     function isSignedIn() {
       return request.auth != null;
     }
 
     /**
-     * Checks if the currently authenticated user's UID matches the provided userId.
+     * Checks whether the authenticated user owns the document.
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
     /**
-     * Checks if the authenticated user is the designated administrator.
-     * The UID should be replaced with the actual admin's Firebase Auth UID.
+     * Checks whether the authenticated user is the administrator.
+     * Replace the UID below with the actual admin Firebase Auth UID.
      */
     function isAdmin() {
-      // UID for the admin user.
-      return isSignedIn() && request.auth.uid == 'emM4KrlWNMR9Vhh7uCMmH5D6t362';
+      return isSignedIn() && request.auth.uid == "emM4KrlWNMR9Vhh7uCMmH5D6t362";
     }
 
-    // --------------------------------------------------------------------
+    // --------------------------------------------------
     // Collection Rules
-    // --------------------------------------------------------------------
+    // --------------------------------------------------
 
     /**
-     * @description Controls access to the 'projects' collection.
-     * Publicly readable, but only the admin can create, update, or delete.
+     * @description
+     * Rules for the `projects` collection.
+     * Projects are publicly readable but only the admin
+     * can create, update, or delete them.
      */
     match /projects/{projectId} {
       allow read: if true;
@@ -58,8 +64,10 @@ service cloud.firestore {
     }
 
     /**
-     * @description Controls access to the 'skills' collection.
-     * Publicly readable, but only the admin can create, update, or delete.
+     * @description
+     * Rules for the `skills` collection.
+     * Skills are publicly readable but only the admin
+     * can create, update, or delete them.
      */
     match /skills/{skillId} {
       allow read: if true;
@@ -67,22 +75,27 @@ service cloud.firestore {
     }
 
     /**
-     * @description Acts as a secure "drop-box". Anyone can create a message,
-     * but no one can read, update, or delete them from the client.
-     * Admin access for reading should be handled via server-side logic (e.g., Cloud Functions).
-     */
-    match /contact_messages/{contactMessageId} {
-      allow create: if true;
-      allow read, update, delete: if false;
-    }
-
-    /**
-     * @description Controls access to user profiles. Publicly readable, but
-     * users can only write to their own profile document.
+     * @description
+     * Rules for the `user_profiles` collection.
+     * Profiles are publicly readable.
+     * Users may only create or update their own profile document.
      */
     match /user_profiles/{userProfileId} {
       allow read: if true;
       allow write: if isOwner(userProfileId);
+    }
+
+    /**
+     * @description
+     * Rules for the `contact_messages` collection.
+     * Acts as a secure "drop-box".
+     * Anyone can submit a message.
+     * No client is allowed to read, update, or delete messages.
+     * Admin access should be handled server-side (Cloud Functions / Admin SDK).
+     */
+    match /contact_messages/{contactMessageId} {
+      allow create: if true;
+      allow read, update, delete: if false;
     }
   }
 }
