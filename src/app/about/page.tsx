@@ -42,7 +42,10 @@ export default async function AboutPage() {
   };
   
   const EducationBlock = ({ education }: { education?: EducationEntry[] }) => {
-    if (!education || education.length === 0) return null;
+    // Defensive check to ensure education is an array before mapping
+    if (!Array.isArray(education) || education.length === 0) {
+      return null;
+    }
 
     return (
          <div className="mt-6 space-y-4">
@@ -100,12 +103,12 @@ export default async function AboutPage() {
             <h1 className="font-headline text-4xl font-bold text-primary">About Me</h1>
             <Paragraphs text={profile?.introduction} />
           </div>
-          {profile?.education && profile.education.length > 0 && (
-            <div>
-              <h2 className="font-headline text-3xl font-bold text-primary">Education</h2>
-              <EducationBlock education={profile.education} />
-            </div>
-          )}
+          
+          <div>
+            <h2 className="font-headline text-3xl font-bold text-primary">Education</h2>
+            <EducationBlock education={profile?.education} />
+          </div>
+          
           {profile?.passions && (
             <div>
               <h2 className="font-headline text-3xl font-bold text-primary">Passions & Hobbies</h2>
