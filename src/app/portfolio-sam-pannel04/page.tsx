@@ -21,7 +21,7 @@ export default function AdminPanelPage() {
     }
 
     if (!user) {
-      router.push('/login');
+      router.push('/portfolio-sam-pannel04/login');
       return;
     }
 
@@ -48,7 +48,7 @@ export default function AdminPanelPage() {
 
   const handleSignOut = async () => {
     await auth.signOut();
-    router.push('/login');
+    router.push('/portfolio-sam-pannel04/login');
   };
 
   return (
