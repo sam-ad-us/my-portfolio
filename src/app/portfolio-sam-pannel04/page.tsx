@@ -2,26 +2,48 @@
 
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminPanelPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  const adminUid = 'emM4KrlWNMR9Vhh7uCMmH5D6t362';
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
+    if (loading) {
+      return; 
     }
-  }, [user, loading, router]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+    if (!user) {
+      router.push('/login');
+      return;
+    }
 
-  if (!user) {
-    return null;
+    if (user.uid !== adminUid) {
+      toast({
+        title: 'Not Authorized',
+        description: 'You do not have permission to access this page.',
+        variant: 'destructive',
+      });
+      router.push('/');
+      setIsAuthorized(false);
+    } else {
+      setIsAuthorized(true);
+    }
+  }, [user, loading, router, toast, adminUid]);
+
+  if (loading || !isAuthorized) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div>{loading ? 'Loading...' : 'Redirecting...'}</div>
+      </div>
+    );
   }
 
   const handleSignOut = async () => {
