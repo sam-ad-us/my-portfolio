@@ -9,14 +9,13 @@ import { db } from '@/lib/firebase';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-// Schema for a form that can have either an image URL or an image file
 const projectFormSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   techStack: z.string().min(1, 'Tech stack is required'),
   liveLink: z.string().url('Invalid URL format').or(z.literal('')),
   githubLink: z.string().url('Invalid URL format').or(z.literal('')),
-  imageUrl: z.string().url('Invalid URL').optional(),
+  imageUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
   imageFile: z
     .instanceof(File)
     .optional()
@@ -30,9 +29,8 @@ const projectFormSchema = z.object({
     ),
 }).refine(data => data.imageUrl || data.imageFile, {
   message: "Either an image URL or an image file must be provided.",
-  path: ["imageUrl"], // Report error on imageUrl for simplicity
+  path: ["imageUrl"],
 });
-
 
 export type ProjectFormState = {
   success: boolean;
@@ -44,7 +42,6 @@ export async function addProject(
   prevState: ProjectFormState,
   formData: FormData
 ): Promise<ProjectFormState> {
-  
   const imageFile = formData.get('imageFile');
   const imageUrlValue = formData.get('imageUrl');
 
@@ -70,17 +67,11 @@ export async function addProject(
   let finalImageUrl = providedImageUrl;
 
   try {
-    // Handle image upload if a file is provided
     if (file) {
         const storage = getStorage();
         const storageRef = ref(storage, `projects/${Date.now()}_${file.name}`);
-        
         const fileBuffer = await file.arrayBuffer();
-        
-        await uploadBytes(storageRef, fileBuffer, {
-            contentType: file.type,
-        });
-
+        await uploadBytes(storageRef, fileBuffer, { contentType: file.type });
         finalImageUrl = await getDownloadURL(storageRef);
     }
     
@@ -88,7 +79,6 @@ export async function addProject(
         return {
             success: false,
             message: 'Image is required. Please provide a URL or upload a file.',
-            errors: { imageUrl: ["Image is required."] }
         };
     }
 
@@ -106,9 +96,9 @@ export async function addProject(
     revalidatePath('/');
     
     return { success: true, message: 'Project added successfully!' };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error adding project:', error);
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';
     return { success: false, message: `Failed to add project. ${errorMessage}` };
   }
 }

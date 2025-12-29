@@ -1,6 +1,5 @@
 "use client";
 
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 import {
   Card,
@@ -16,13 +15,15 @@ import Link from 'next/link';
 import { ArrowUpRight, Github } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-type ProjectCardProps = {
+export type Project = {
   id: string;
   title: string;
   description: string;
   techStack: string[];
   githubLink: string;
   liveLink: string;
+  imageUrl: string;
+  createdAt?: Date;
 };
 
 export default function ProjectCard({
@@ -32,8 +33,8 @@ export default function ProjectCard({
   techStack,
   githubLink,
   liveLink,
-}: ProjectCardProps) {
-  const projectImage = PlaceHolderImages.find((img) => img.id === id);
+  imageUrl,
+}: Project) {
   const { toast } = useToast();
 
   const handleLiveDemoClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -54,15 +55,15 @@ export default function ProjectCard({
 
   return (
     <Card className="flex h-full transform-gpu flex-col overflow-hidden bg-card/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20">
-      {projectImage && (
-        <Image
-          src={projectImage.imageUrl}
-          alt={title}
-          width={600}
-          height={400}
-          data-ai-hint={projectImage.imageHint}
-          className="w-full object-cover"
-        />
+      {imageUrl && (
+        <div className="relative w-full h-60">
+            <Image
+            src={imageUrl}
+            alt={title}
+            fill
+            className="object-cover"
+            />
+        </div>
       )}
       <CardHeader>
         <CardTitle className="font-headline text-2xl text-primary">

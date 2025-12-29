@@ -1,55 +1,36 @@
-import ProjectCard from './project-card';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import ProjectCard, { type Project } from './project-card';
 import { Section } from './section';
 
-const projects = [
-  {
-    id: 'project-1',
-    title: 'E-Commerce Platform',
-    description:
-      'A full-featured e-commerce site with product listings, a shopping cart, and a secure checkout process. Built with a modern MERN stack.',
-    techStack: ['React', 'Node.js', 'Express', 'MongoDB', 'Redux'],
-    githubLink: '#',
-    liveLink: '#',
-  },
-  {
-    id: 'project-2',
-    title: 'Real-Time Chat App',
-    description:
-      'A responsive chat application enabling users to communicate in real-time. Features include private messaging and user presence indicators.',
-    techStack: ['Next.js', 'Socket.IO', 'Tailwind CSS', 'TypeScript'],
-    githubLink: '#',
-    liveLink: '#',
-  },
-  {
-    id: 'project-3',
-    title: 'Data Visualization Dashboard',
-    description:
-      'An interactive dashboard for visualizing complex datasets. Users can filter, sort, and view data through dynamic charts and graphs.',
-    techStack: ['React', 'D3.js', 'Python', 'Flask'],
-    githubLink: '#',
-    liveLink: '#',
-  },
-  {
-    id: 'project-4',
-    title: 'Portfolio Website',
-    description:
-      'This very portfolio website! A personal space to showcase my projects and skills, built with Next.js and a cinematic Three.js background.',
-    techStack: ['Next.js', 'Three.js', 'Tailwind CSS', 'Genkit'],
-    githubLink: '#',
-    liveLink: '#',
-  },
-  {
-    id: 'project-5',
-    title: 'RB Publication',
-    description:
-      'A modern publication website for showcasing articles, books, and author profiles. Built with Next.js for a fast and responsive user experience.',
-    techStack: ['Next.js', 'React', 'Tailwind CSS'],
-    githubLink: '#',
-    liveLink: 'https://rb-publication.vercel.app/',
+async function getProjects(): Promise<Project[]> {
+  try {
+    const projectsCol = collection(db, 'projects');
+    const q = query(projectsCol, orderBy('createdAt', 'desc'));
+    const projectsSnapshot = await getDocs(q);
+    const projectsList = projectsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title,
+        description: data.description,
+        techStack: data.techStack,
+        githubLink: data.githubLink,
+        liveLink: data.liveLink,
+        imageUrl: data.imageUrl,
+        createdAt: data.createdAt.toDate(),
+      };
+    });
+    return projectsList as Project[];
+  } catch (error) {
+    console.error("Error fetching projects: ", error);
+    return [];
   }
-];
+}
 
-export default function ProjectsSection() {
+export default async function ProjectsSection() {
+  const projects = await getProjects();
+
   return (
     <Section id="projects">
       <div className="text-center">
@@ -58,10 +39,16 @@ export default function ProjectsSection() {
           Here are some of the projects I've worked on. Feel free to explore them.
         </p>
       </div>
-      <div className="mt-12 grid gap-8 md:grid-cols-2">
-        {projects.map((project) => (
-          <ProjectCard key={project.id} {...project} />
-        ))}
+       <div className="mt-12 grid gap-8 md:grid-cols-2">
+        {projects.length > 0 ? (
+          projects.map((project) => (
+            <ProjectCard key={project.id} {...project} />
+          ))
+        ) : (
+          <div className="md:col-span-2 text-center text-muted-foreground">
+            <p>No projects have been added yet. Check back soon!</p>
+          </div>
+        )}
       </div>
     </Section>
   );
