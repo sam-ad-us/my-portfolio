@@ -9,24 +9,28 @@ import { db } from '@/lib/firebase';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-const projectSchema = z.object({
+// Schema for a form that can have either an image URL or an image file
+const projectFormSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   description: z.string().min(1, 'Description is required'),
   techStack: z.string().min(1, 'Tech stack is required'),
   liveLink: z.string().url('Invalid URL format').or(z.literal('')),
   githubLink: z.string().url('Invalid URL format').or(z.literal('')),
-  imageUrl: z.string().url('A valid image URL is required').optional(),
+  imageUrl: z.string().url('Invalid URL').optional(),
   imageFile: z
     .instanceof(File)
-    .refine((file) => file.size <= MAX_FILE_SIZE, `Max image size is 5MB.`)
+    .optional()
     .refine(
-      (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
-      "Only .jpg, .jpeg, .png and .webp formats are supported."
+      (file) => !file || file.size <= MAX_FILE_SIZE,
+      `Max image size is 5MB.`
     )
-    .optional(),
+    .refine(
+      (file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type),
+      "Only .jpg, .jpeg, .png and .webp formats are supported."
+    ),
 }).refine(data => data.imageUrl || data.imageFile, {
   message: "Either an image URL or an image file must be provided.",
-  path: ["imageUrl"], // Report error on imageUrl field
+  path: ["imageUrl"], // Report error on imageUrl for simplicity
 });
 
 
@@ -42,13 +46,15 @@ export async function addProject(
 ): Promise<ProjectFormState> {
   
   const imageFile = formData.get('imageFile');
-  const validatedFields = projectSchema.safeParse({
+  const imageUrlValue = formData.get('imageUrl');
+
+  const validatedFields = projectFormSchema.safeParse({
     title: formData.get('title'),
     description: formData.get('description'),
     techStack: formData.get('techStack'),
     liveLink: formData.get('liveLink'),
     githubLink: formData.get('githubLink'),
-    imageUrl: formData.get('imageUrl') || undefined,
+    imageUrl: imageUrlValue ? String(imageUrlValue) : undefined,
     imageFile: imageFile instanceof File && imageFile.size > 0 ? imageFile : undefined,
   });
 
@@ -60,8 +66,8 @@ export async function addProject(
     };
   }
 
-  const { techStack, imageFile: file, ...rest } = validatedFields.data;
-  let finalImageUrl = rest.imageUrl;
+  const { techStack, imageFile: file, imageUrl: providedImageUrl, ...rest } = validatedFields.data;
+  let finalImageUrl = providedImageUrl;
 
   try {
     // Handle image upload if a file is provided
@@ -69,7 +75,7 @@ export async function addProject(
         const storage = getStorage();
         const storageRef = ref(storage, `projects/${Date.now()}_${file.name}`);
         
-        const fileBuffer = Buffer.from(await file.arrayBuffer());
+        const fileBuffer = await file.arrayBuffer();
         
         await uploadBytes(storageRef, fileBuffer, {
             contentType: file.type,
@@ -81,7 +87,8 @@ export async function addProject(
     if (!finalImageUrl) {
         return {
             success: false,
-            message: 'Image URL is missing after processing.',
+            message: 'Image is required. Please provide a URL or upload a file.',
+            errors: { imageUrl: ["Image is required."] }
         };
     }
 
