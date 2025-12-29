@@ -1,0 +1,131 @@
+/**
+ * Core Philosophy: This ruleset supports a public-facing portfolio application.
+ * Most data, such as projects, skills, and user profiles, is publicly readable to
+ * showcase content to any visitor. Write access is strictly controlled. Contact
+ * messages are handled in a "drop-box" style, where anyone can submit one, but
+ * no one can read them via the client API, ensuring privacy.
+ *
+ * Data Structure: The data is organized into a flat hierarchy with four distinct
+ * top-level collections: /projects, /skills, /contact_messages, and /user_profiles.
+ * This segregation simplifies security rules, as all documents within a single
+ * collection share the same access control pattern, making list operations inherently
+ * secure and performant.
+ *
+ * Key Security Decisions:
+ * - Public Read-Only Content: The /projects and /skills collections are publicly
+ *   readable but have all client-side writes disabled. This assumes content is
+ *   managed through a trusted environment like the Firebase Console or a backend server.
+ * - User Profile Ownership: The /user_profiles collection is publicly readable, but
+ *   a user can only create, update, or delete their own profile document. The
+ *   document ID must match the user's Authentication UID.
+ * - Private "Drop-Box": The /contact_messages collection allows anyone (even
+ *   unauthenticated users) to create a document. However, all read, update, and
+ *   delete operations are denied to protect the submitter's privacy. These messages
+ *   are intended to be read only by an administrator via the Firebase Console.
+ * - No Admin Role: This ruleset does not define a global admin role. All
+ *   administrative tasks are assumed to be handled outside the client application.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --------------------------------------------------------------------
+    // Helper Functions
+    // --------------------------------------------------------------------
+
+    /**
+     * Checks if the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the currently authenticated user's UID matches the provided userId.
+     * This is the fundamental check for document ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Checks for ownership on an existing document. Used for update and delete
+     * operations to prevent acting on documents that do not exist.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    // --------------------------------------------------------------------
+    // Collection Rules
+    // --------------------------------------------------------------------
+
+    /**
+     * @description Controls access to the 'projects' collection.
+     * Projects are public and can be read by anyone, but cannot be modified
+     * by any client. They are considered admin-managed content.
+     * @path /projects/{projectId}
+     * @allow (get) Anyone, signed in or not, can read a specific project.
+     * @deny (create) A signed-in user cannot create a new project.
+     * @principle Secures read-only public data by disabling all write operations.
+     */
+    match /projects/{projectId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Controls access to the 'skills' collection.
+     * Skills are public and can be read by anyone, but cannot be modified
+     * by any client. They are considered admin-managed content.
+     * @path /skills/{skillId}
+     * @allow (list) Anyone, signed in or not, can list all skills.
+     * @deny (update) A signed-in user cannot update an existing skill.
+     * @principle Secures read-only public data by disabling all write operations.
+     */
+    match /skills/{skillId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Controls access to the 'contact_messages' collection.
+     * This collection acts as a secure "drop-box". Anyone can submit a message,
+     * but no one can read, update, or delete any messages from the client.
+     * @path /contact_messages/{contactMessageId}
+     * @allow (create) An anonymous visitor can submit a contact message.
+     * @deny (get) A signed-in user cannot read a message, even one they sent.
+     * @principle Enforces privacy by allowing write-only access for clients.
+     */
+    match /contact_messages/{contactMessageId} {
+      allow create: if true;
+      allow get: if false;
+      allow list: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Controls access to user profiles.
+     * User profiles are publicly readable, but a user can only write to their
+     * own profile document, which must be identified by their auth UID.
+     * @path /user_profiles/{userProfileId}
+     * @allow (update) A signed-in user (auth.uid: 'user123') can update their own profile at /user_profiles/user123.
+     * @deny (create) A signed-in user (auth.uid: 'user123') cannot create a profile at /user_profiles/user456.
+     * @principle Enforces document ownership for all write operations while allowing public reads.
+     */
+    match /user_profiles/{userProfileId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isOwner(userProfileId) && request.resource.data.id == userProfileId;
+      allow update: if isExistingOwner(userProfileId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userProfileId);
+    }
+  }
+}

@@ -1,0 +1,252 @@
+{
+  "entities": {
+    "Project": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Project",
+      "type": "object",
+      "description": "Represents a project showcased in the portfolio.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the project."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the project."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the project."
+        },
+        "techStack": {
+          "type": "array",
+          "description": "List of technologies used in the project.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "githubLink": {
+          "type": "string",
+          "description": "Link to the project's GitHub repository.",
+          "format": "uri"
+        },
+        "liveDemoLink": {
+          "type": "string",
+          "description": "Link to the live demo of the project.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "techStack"
+      ]
+    },
+    "Skill": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Skill",
+      "type": "object",
+      "description": "Represents a skill highlighted in the portfolio.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the skill."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the skill (e.g., React, Node.js)."
+        },
+        "icon": {
+          "type": "string",
+          "description": "Icon representing the skill (e.g., a URL to an image or an icon name from a library)."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "icon"
+      ]
+    },
+    "ContactMessage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContactMessage",
+      "type": "object",
+      "description": "Represents a contact message sent through the contact form.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the contact message."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the person sending the message."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the person sending the message.",
+          "format": "email"
+        },
+        "message": {
+          "type": "string",
+          "description": "The content of the message."
+        },
+        "sentDate": {
+          "type": "string",
+          "description": "The date and time the message was sent.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "message",
+        "sentDate"
+      ]
+    },
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents the user's profile information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user profile."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the user."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user (e.g., Software Engineer)."
+        },
+        "introduction": {
+          "type": "string",
+          "description": "A brief introduction of the user."
+        },
+        "profilePicture": {
+          "type": "string",
+          "description": "URL to the user's profile picture.",
+          "format": "uri"
+        },
+        "education": {
+          "type": "string",
+          "description": "Information about the user's education."
+        },
+        "passions": {
+          "type": "string",
+          "description": "Information about the user's passions."
+        },
+        "githubLink": {
+          "type": "string",
+          "description": "Link to the user's GitHub profile.",
+          "format": "uri"
+        },
+        "linkedinLink": {
+          "type": "string",
+          "description": "Link to the user's LinkedIn profile.",
+          "format": "uri"
+        },
+        "twitterLink": {
+          "type": "string",
+          "description": "Link to the user's Twitter profile.",
+          "format": "uri"
+        },
+        "instagramLink": {
+          "type": "string",
+          "description": "Link to the user's Instagram profile.",
+          "format": "uri"
+        },
+        "cvLink": {
+          "type": "string",
+          "description": "Link to the user's cv document.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "role",
+        "introduction"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/projects/{projectId}",
+        "definition": {
+          "entityName": "Project",
+          "schema": {
+            "$ref": "#/backend/entities/Project"
+          },
+          "description": "Stores project information.  No denormalized authorization fields are required as all read access is public.",
+          "params": [
+            {
+              "name": "projectId",
+              "description": "The unique identifier of the project."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/skills/{skillId}",
+        "definition": {
+          "entityName": "Skill",
+          "schema": {
+            "$ref": "#/backend/entities/Skill"
+          },
+          "description": "Stores skill information. No denormalized authorization fields are required as all read access is public.",
+          "params": [
+            {
+              "name": "skillId",
+              "description": "The unique identifier of the skill."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/contact_messages/{contactMessageId}",
+        "definition": {
+          "entityName": "ContactMessage",
+          "schema": {
+            "$ref": "#/backend/entities/ContactMessage"
+          },
+          "description": "Stores contact messages submitted through the contact form.  Write access should be public, read access is restricted to administrators.",
+          "params": [
+            {
+              "name": "contactMessageId",
+              "description": "The unique identifier of the contact message."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/user_profiles/{userProfileId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information.  Read access is public, and write access is restricted to the user themselves.",
+          "params": [
+            {
+              "name": "userProfileId",
+              "description": "The unique identifier of the user profile, which corresponds to the Firebase Auth UID."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to store portfolio-related data, including projects, skills, contact messages, and user profiles. The structure prioritizes simplicity and clarity, avoiding complex hierarchical dependencies for authorization. Each top-level collection is designed to hold documents with similar security requirements, thus simplifying the security rules.\n\n- `projects`: Stores project data.\n- `skills`: Stores skill data.\n- `contact_messages`: Stores contact messages.\n- `user_profiles`: Stores user profile data.\n\nThis structure ensures that list operations are secure because each collection contains documents with the same authorization requirements (QAPs). Authorization Independence is maintained as there is no need to `get()` data from other collections to validate document access."
+  }
+}
