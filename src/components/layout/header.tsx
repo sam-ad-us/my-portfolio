@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import { Menu, TerminalSquare, Lock } from 'lucide-react';
 import Link from 'next/link';
 import * as React from 'react';
-import { useAuth } from '@/hooks/use-auth';
 
 const mainNav = [
   { name: 'About', href: '/about' },
@@ -16,7 +15,6 @@ const mainNav = [
 ];
 
 export default function Header() {
-  const { user, loading } = useAuth();
   const [open, setOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
 
@@ -53,15 +51,6 @@ export default function Header() {
               {item.name}
             </Link>
           ))}
-          {!loading && user && (
-            <Link
-              href="/portfolio-sam-pannel04"
-              className="text-sm font-medium text-foreground/80 transition-colors hover:text-primary flex items-center gap-1"
-            >
-              <Lock className="h-4 w-4" />
-              Admin
-            </Link>
-          )}
         </nav>
 
         <Sheet open={open} onOpenChange={setOpen}>
@@ -83,15 +72,6 @@ export default function Header() {
                   {item.name}
                 </Link>
               ))}
-               {!loading && user && (
-                <Link
-                  href="/portfolio-sam-pannel04"
-                  onClick={() => setOpen(false)}
-                  className="block px-2 py-1 text-lg font-medium transition-colors hover:text-primary"
-                >
-                  Admin Panel
-                </Link>
-              )}
             </nav>
           </SheetContent>
         </Sheet>
