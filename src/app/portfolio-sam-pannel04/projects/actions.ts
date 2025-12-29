@@ -1,15 +1,31 @@
 'use server';
 
 import { addDoc, collection, deleteDoc, doc } from 'firebase/firestore';
-import { getStorage, ref, deleteObject } from 'firebase/storage';
 import { revalidatePath } from 'next/cache';
-import { db, storage } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { uploadImage } from '@/ai/flows/upload-image-flow';
+import ImageKit from 'imagekit';
+
+// This is for deletion. We need a server-side instance.
+const imagekit = new ImageKit({
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
+  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
+});
+
 
 export type ProjectFormState = {
   success: boolean;
   message: string;
 };
+
+async function fileToDataUri(file: File): Promise<string> {
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const base64 = buffer.toString('base64');
+    return `data:${file.type};base64,${base64}`;
+}
+
 
 export async function addProject(
   prevState: ProjectFormState,
@@ -21,8 +37,8 @@ export async function addProject(
     const techStack = formData.get('techStack') as string;
     const liveLink = formData.get('liveLink') as string;
     const githubLink = formData.get('githubLink') as string;
-    const imageFile = formData.get('imageFile') as File;
-    const imageUrlFromForm = formData.get('imageUrl') as string;
+    const imageFile = formData.get('imageFile') as File | null;
+    const imageUrlFromForm = formData.get('imageUrl') as string | null;
 
     if (!title || !description || !techStack) {
       return { success: false, message: 'Title, Description, and Tech Stack are required.' };
@@ -32,18 +48,18 @@ export async function addProject(
 
     if (imageFile && imageFile.size > 0) {
        try {
-        const result = await uploadImage({
-            dataUri: await fileToDataUri(imageFile),
-        });
+        const dataUri = await fileToDataUri(imageFile);
+        const result = await uploadImage({ dataUri });
+        
         if (result.url) {
             finalImageUrl = result.url;
         } else {
-            return { success: false, message: 'Failed to get image URL from upload flow.' };
+            return { success: false, message: 'Failed to get image URL from ImageKit.' };
         }
        } catch (uploadError) {
-         console.error("SERVER_ACTION_ERROR (AI Flow Upload):", uploadError);
+         console.error("SERVER_ACTION_ERROR (ImageKit Upload):", uploadError);
          const errorMessage = uploadError instanceof Error ? uploadError.message : 'An unknown error occurred during file upload.';
-         return { success: false, message: `Failed to upload image via flow. ${errorMessage}` };
+         return { success: false, message: `Failed to upload image. ${errorMessage}` };
        }
     }
 
@@ -82,25 +98,20 @@ export async function addProject(
   }
 }
 
-async function fileToDataUri(file: File): Promise<string> {
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const base64 = buffer.toString('base64');
-    return `data:${file.type};base64,${base64}`;
-}
-
-
 export async function deleteProject(projectId: string, imageUrl: string): Promise<{ success: boolean; message: string }> {
   try {
     await deleteDoc(doc(db, 'projects', projectId));
 
-    if (imageUrl && imageUrl.includes('firebasestorage.googleapis.com')) {
+    if (imageUrl && imageUrl.includes(process.env.IMAGEKIT_URL_ENDPOINT!)) {
       try {
-        const imageRef = ref(storage, imageUrl);
-        await deleteObject(imageRef);
-      } catch (storageError) {
-        console.warn(`Could not delete image from storage: ${imageUrl}. It might have been already deleted or the URL is incorrect.`, storageError);
-        // We don't block the success of the overall delete operation if only image deletion fails.
+        const files = await imagekit.listFiles({
+          searchQuery: `url = "${imageUrl}"`
+        });
+        if (files && files.length > 0) {
+          await imagekit.deleteFile(files[0].fileId);
+        }
+      } catch (imageKitError) {
+        console.warn(`Could not delete image from ImageKit: ${imageUrl}. It might have been already deleted or the URL is incorrect.`, imageKitError);
       }
     }
 
