@@ -1,18 +1,40 @@
+
 import { Button } from '@/components/ui/button';
 import { Github, Instagram, Linkedin, Mail, Twitter } from 'lucide-react';
 import Link from 'next/link';
 import { Section } from '@/components/section';
 import ContactSection from '@/components/contact-section';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { type UserProfile } from '@/types/user-profile';
 
-const socialLinks = [
-  { name: 'GitHub', icon: Github, href: 'https://github.com/sam-ad-us' },
-  { name: 'LinkedIn', icon: Linkedin, href: 'https://www.linkedin.com/in/abdussamad001' },
-  { name: 'Twitter', icon: Twitter, href: '#' },
-  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/sam_ad_us?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==' },
-  { name: 'Email', icon: Mail, href: 'mailto:abdussamad.net.0@gmail.com' },
-];
+async function getUserProfile(): Promise<UserProfile | null> {
+    const adminUid = 'emM4KrlWNMR9Vhh7uCMmH5D6t362';
+    try {
+        const docRef = doc(db, 'user_profiles', adminUid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return docSnap.data() as UserProfile;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching user profile for contact page:", error);
+        return null;
+    }
+}
 
-export default function ContactPage() {
+
+export default async function ContactPage() {
+  const profile = await getUserProfile();
+  
+  const socialLinks = [
+    { name: 'GitHub', icon: Github, href: profile?.githubLink || '#' },
+    { name: 'LinkedIn', icon: Linkedin, href: profile?.linkedinLink || '#' },
+    { name: 'Twitter', icon: Twitter, href: profile?.twitterLink || '#' },
+    { name: 'Instagram', icon: Instagram, href: profile?.instagramLink || '#' },
+    { name: 'Email', icon: Mail, href: `mailto:${'abdussamad.net.0@gmail.com'}` },
+  ];
+
   return (
     <>
       <Section id="contact-info" className="py-12 md:py-24">
