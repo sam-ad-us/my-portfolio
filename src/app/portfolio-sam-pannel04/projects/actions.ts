@@ -35,8 +35,16 @@ export async function addProject(
         const fileBuffer = await imageFile.arrayBuffer();
         await uploadBytes(storageRef, fileBuffer, { contentType: imageFile.type });
         finalImageUrl = await getDownloadURL(storageRef);
-      } catch (uploadError) {
+      } catch (uploadError: any) {
         console.error("SERVER_ACTION_ERROR (File Upload):", uploadError);
+
+        if (uploadError.code === 'storage/unknown') {
+            return {
+                success: false,
+                message: "CORS configuration error. Your Firebase Storage bucket is not configured to allow uploads from this domain. Please configure CORS on your bucket to fix this."
+            }
+        }
+        
         const errorMessage = uploadError instanceof Error ? uploadError.message : 'An unknown error occurred during file upload.';
         return { success: false, message: `Failed to upload image. ${errorMessage}` };
       }
