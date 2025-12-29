@@ -37,22 +37,13 @@ export default function ProjectCard({
 }: Project) {
   const { toast } = useToast();
 
-  const handleLiveDemoClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMissingLinkClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     toast({
-      title: 'Web In Progress',
-      description: 'This project is not yet deployed. Please check back later.',
+      title: 'Hey, this is nothing, coming soon.',
     });
   };
   
-  const handleCodeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    toast({
-      title: 'Code is Private',
-      description: 'The source code for this project is not public.',
-    });
-  };
-
   return (
     <Card className="flex h-full transform-gpu flex-col overflow-hidden bg-card/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/20">
       {imageUrl && (
@@ -81,8 +72,8 @@ export default function ProjectCard({
         </div>
       </CardContent>
       <CardFooter className="flex justify-end gap-4">
-        {githubLink === '#' ? (
-          <Button variant="outline" onClick={handleCodeClick}>
+        {!githubLink ? (
+          <Button variant="outline" onClick={handleMissingLinkClick}>
             <Github /> Code
           </Button>
         ) : (
@@ -92,8 +83,8 @@ export default function ProjectCard({
             </Link>
           </Button>
         )}
-        {liveLink === '#' ? (
-          <Button onClick={handleLiveDemoClick}>
+        {!liveLink ? (
+          <Button onClick={handleMissingLinkClick}>
             Live Demo <ArrowUpRight />
           </Button>
         ) : (

@@ -1,3 +1,4 @@
+"use client";
 
 import Image from 'next/image';
 import { Section } from '@/components/section';
@@ -7,6 +8,8 @@ import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { type UserProfile, type EducationEntry } from '@/types/user-profile';
+import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 async function getUserProfile(): Promise<UserProfile | null> {
     const adminUid = 'emM4KrlWNMR9Vhh7uCMmH5D6t362';
@@ -23,12 +26,8 @@ async function getUserProfile(): Promise<UserProfile | null> {
     }
 }
 
-
-export default async function AboutPage() {
-  const profile = await getUserProfile();
-
-  // A simple component to render paragraphs from text with newlines
-  const Paragraphs = ({ text }: { text?: string }) => {
+// A simple component to render paragraphs from text with newlines
+const Paragraphs = ({ text }: { text?: string }) => {
     if (!text) return null;
     return (
       <>
@@ -39,9 +38,9 @@ export default async function AboutPage() {
         ))}
       </>
     );
-  };
+};
   
-  const EducationBlock = ({ education }: { education?: EducationEntry[] }) => {
+const EducationBlock = ({ education }: { education?: EducationEntry[] }) => {
     // Defensive check to ensure education is an array before mapping
     if (!Array.isArray(education) || education.length === 0) {
       return null;
@@ -58,7 +57,36 @@ export default async function AboutPage() {
             ))}
         </div>
     )
-  }
+}
+
+export default function AboutPage() {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const { toast } = useToast();
+
+   useEffect(() => {
+        getUserProfile().then(setProfile);
+    }, []);
+
+  const handleMissingLinkClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toast({
+        title: 'Hey, this is nothing, coming soon.',
+    });
+  };
+
+   const cvButton = !profile?.cvLink ? (
+        <Button size="lg" onClick={handleMissingLinkClick}>
+            <Download className="mr-2 h-5 w-5" />
+            Download CV
+        </Button>
+    ) : (
+        <Button size="lg" asChild>
+            <Link href={profile.cvLink} target='_blank' rel='noopener noreferrer'>
+                <Download className="mr-2 h-5 w-5" />
+                Download CV
+            </Link>
+        </Button>
+    );
 
   return (
     <Section id="about" className="py-12 md:py-24">
@@ -83,12 +111,7 @@ export default async function AboutPage() {
             <div className="absolute inset-2 -z-10 animate-pulse rounded-full border-2 border-primary/30" style={{ animationDelay: '200ms' }} />
           </div>
           <div className="flex flex-wrap justify-center gap-4">
-            <Button size="lg" asChild>
-                <Link href={profile?.cvLink || '#'} target='_blank' rel='noopener noreferrer'>
-                    <Download className="mr-2 h-5 w-5" />
-                    Download CV
-                </Link>
-            </Button>
+            {cvButton}
             <Button variant="outline" size="lg" asChild>
               <Link href="/projects">
                 <FolderKanban className="mr-2 h-5 w-5" />

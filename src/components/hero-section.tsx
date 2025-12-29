@@ -1,3 +1,4 @@
+"use client";
 
 import { Button } from '@/components/ui/button';
 import { Download, Github, Linkedin } from 'lucide-react';
@@ -5,6 +6,8 @@ import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { type UserProfile } from '@/types/user-profile';
+import { useEffect, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 async function getUserProfile(): Promise<UserProfile | null> {
     const adminUid = 'emM4KrlWNMR9Vhh7uCMmH5D6t362';
@@ -21,8 +24,63 @@ async function getUserProfile(): Promise<UserProfile | null> {
     }
 }
 
-export default async function HeroSection() {
-    const profile = await getUserProfile();
+
+export default function HeroSection() {
+    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        getUserProfile().then(setProfile);
+    }, []);
+
+    const handleMissingLinkClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        toast({
+            title: 'Hey, this is nothing, coming soon.',
+        });
+    };
+
+    const cvButton = !profile?.cvLink ? (
+        <Button size="lg" onClick={handleMissingLinkClick}>
+            <Download className="mr-2 h-5 w-5" />
+            Download CV
+        </Button>
+    ) : (
+        <Button size="lg" asChild>
+            <Link href={profile.cvLink} target='_blank' rel='noopener noreferrer'>
+                <Download className="mr-2 h-5 w-5" />
+                Download CV
+            </Link>
+        </Button>
+    );
+
+    const githubButton = !profile?.githubLink ? (
+         <Button variant="outline" size="lg" onClick={handleMissingLinkClick}>
+              <Github className="mr-2 h-5 w-5" />
+              GitHub
+         </Button>
+    ) : (
+         <Button variant="outline" size="lg" asChild>
+            <Link href={profile.githubLink} target="_blank" rel="noopener noreferrer">
+              <Github className="mr-2 h-5 w-5" />
+              GitHub
+            </Link>
+        </Button>
+    );
+    
+    const linkedinButton = !profile?.linkedinLink ? (
+         <Button variant="outline" size="lg" onClick={handleMissingLinkClick}>
+            <Linkedin className="mr-2 h-5 w-5" />
+            LinkedIn
+        </Button>
+    ) : (
+        <Button variant="outline" size="lg" asChild>
+            <Link href={profile.linkedinLink} target="_blank" rel="noopener noreferrer">
+              <Linkedin className="mr-2 h-5 w-5" />
+              LinkedIn
+            </Link>
+        </Button>
+    )
 
   return (
     <section className="flex min-h-screen w-full flex-col items-center justify-center text-center">
@@ -39,24 +97,9 @@ export default async function HeroSection() {
           Passionate about clean code and modern web technologies.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Button size="lg" asChild>
-                <Link href={profile?.cvLink || '#'} target='_blank' rel='noopener noreferrer'>
-                    <Download className="mr-2 h-5 w-5" />
-                    Download CV
-                </Link>
-            </Button>
-          <Button variant="outline" size="lg" asChild>
-            <Link href={profile?.githubLink || '#'} target="_blank" rel="noopener noreferrer">
-              <Github className="mr-2 h-5 w-5" />
-              GitHub
-            </Link>
-          </Button>
-          <Button variant="outline" size="lg" asChild>
-            <Link href={profile?.linkedinLink || '#'} target="_blank" rel="noopener noreferrer">
-              <Linkedin className="mr-2 h-5 w-5" />
-              LinkedIn
-            </Link>
-          </Button>
+            {cvButton}
+            {githubButton}
+            {linkedinButton}
         </div>
       </div>
     </section>
