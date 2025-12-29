@@ -1,9 +1,10 @@
 'use server';
 
 import { addDoc, collection, deleteDoc, doc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { getStorage, ref, deleteObject } from 'firebase/storage';
 import { revalidatePath } from 'next/cache';
 import { db, storage } from '@/lib/firebase';
+import { uploadImage } from '@/ai/flows/upload-image-flow';
 
 export type ProjectFormState = {
   success: boolean;
@@ -30,24 +31,20 @@ export async function addProject(
     let finalImageUrl = imageUrlFromForm;
 
     if (imageFile && imageFile.size > 0) {
-      try {
-        const storageRef = ref(storage, `projects/${Date.now()}_${imageFile.name}`);
-        const fileBuffer = await imageFile.arrayBuffer();
-        await uploadBytes(storageRef, fileBuffer, { contentType: imageFile.type });
-        finalImageUrl = await getDownloadURL(storageRef);
-      } catch (uploadError: any) {
-        console.error("SERVER_ACTION_ERROR (File Upload):", uploadError);
-
-        if (uploadError.code === 'storage/unknown') {
-            return {
-                success: false,
-                message: "CORS configuration error. Your Firebase Storage bucket is not configured to allow uploads from this domain. Please configure CORS on your bucket to fix this."
-            }
+       try {
+        const result = await uploadImage({
+            dataUri: await fileToDataUri(imageFile),
+        });
+        if (result.url) {
+            finalImageUrl = result.url;
+        } else {
+            return { success: false, message: 'Failed to get image URL from upload flow.' };
         }
-        
-        const errorMessage = uploadError instanceof Error ? uploadError.message : 'An unknown error occurred during file upload.';
-        return { success: false, message: `Failed to upload image. ${errorMessage}` };
-      }
+       } catch (uploadError) {
+         console.error("SERVER_ACTION_ERROR (AI Flow Upload):", uploadError);
+         const errorMessage = uploadError instanceof Error ? uploadError.message : 'An unknown error occurred during file upload.';
+         return { success: false, message: `Failed to upload image via flow. ${errorMessage}` };
+       }
     }
 
     if (!finalImageUrl) {
@@ -72,7 +69,6 @@ export async function addProject(
       return { success: false, message: `Failed to save project to database. ${errorMessage}` };
     }
 
-
     revalidatePath('/portfolio-sam-pannel04/projects');
     revalidatePath('/projects');
     revalidatePath('/');
@@ -85,6 +81,14 @@ export async function addProject(
     return { success: false, message: `Failed to add project. ${errorMessage}` };
   }
 }
+
+async function fileToDataUri(file: File): Promise<string> {
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const base64 = buffer.toString('base64');
+    return `data:${file.type};base64,${base64}`;
+}
+
 
 export async function deleteProject(projectId: string, imageUrl: string): Promise<{ success: boolean; message: string }> {
   try {
