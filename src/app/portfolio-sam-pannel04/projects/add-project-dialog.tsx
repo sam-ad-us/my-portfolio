@@ -16,8 +16,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useFormStatus } from 'react-dom';
 import { addProject, type ProjectFormState } from './actions';
-import { useEffect, useRef, useActionState } from "react";
+import { useEffect, useRef, useActionState, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
 
 type AddProjectDialogProps = {
   children: React.ReactNode;
@@ -43,6 +44,7 @@ export function AddProjectDialog({ children, open, onOpenChange }: AddProjectDia
     const [state, formAction] = useActionState(addProject, initialState);
     const formRef = useRef<HTMLFormElement>(null);
     const { toast } = useToast();
+    const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
         if (state.success) {
@@ -52,6 +54,7 @@ export function AddProjectDialog({ children, open, onOpenChange }: AddProjectDia
             });
             onOpenChange(false);
             formRef.current?.reset();
+            setIsUploading(false);
         } else if (state.message && !state.success) {
              toast({
                 title: "Error",
@@ -61,8 +64,16 @@ export function AddProjectDialog({ children, open, onOpenChange }: AddProjectDia
         }
     }, [state, onOpenChange, toast]);
 
+    const handleOpenChange = (isOpen: boolean) => {
+        if (!isOpen) {
+            formRef.current?.reset();
+            setIsUploading(false);
+        }
+        onOpenChange(isOpen);
+    }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
@@ -98,11 +109,30 @@ export function AddProjectDialog({ children, open, onOpenChange }: AddProjectDia
                 <Input id="githubLink" name="githubLink" placeholder="https://github.com/..." className="col-span-3" />
                  {state.errors?.githubLink && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.githubLink[0]}</p>}
             </div>
+
             <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="imageUrl" className="text-right">Image URL</Label>
-                <Input id="imageUrl" name="imageUrl" placeholder="https://..." className="col-span-3" />
-                 {state.errors?.imageUrl && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.imageUrl[0]}</p>}
+                 <Label htmlFor="upload-switch" className="text-right">Upload Image</Label>
+                 <div className="col-span-3 flex items-center gap-2">
+                    <Switch id="upload-switch" checked={isUploading} onCheckedChange={setIsUploading} />
+                    <span className="text-sm text-muted-foreground">{isUploading ? "Upload from device" : "Use Image URL"}</span>
+                </div>
             </div>
+
+            {isUploading ? (
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="imageFile" className="text-right">Project Image</Label>
+                    <Input id="imageFile" name="imageFile" type="file" accept="image/*" className="col-span-3" />
+                    {state.errors?.imageUrl && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.imageUrl[0]}</p>}
+                </div>
+            ) : (
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="imageUrl" className="text-right">Image URL</Label>
+                    <Input id="imageUrl" name="imageUrl" placeholder="https://..." className="col-span-3" />
+                    {state.errors?.imageUrl && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.imageUrl[0]}</p>}
+                </div>
+            )}
+            
+
              <DialogFooter>
                 <DialogClose asChild>
                     <Button type="button" variant="secondary">Cancel</Button>
