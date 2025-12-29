@@ -14,19 +14,21 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     if (!loading && user) {
-      router.push('/portfolio-sam-pannel04');
+      router.replace('/portfolio-sam-pannel04');
     }
   }, [user, loading, router]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSigningIn(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/portfolio-sam-pannel04');
+      // The useEffect will handle the redirect
     } catch (error) {
       console.error("Error signing in: ", error);
       toast({
@@ -34,17 +36,21 @@ export default function LoginPage() {
         description: 'Please check your email and password.',
         variant: 'destructive',
       });
+       setIsSigningIn(false);
     }
   };
   
-  if (loading) {
-    return <div>Loading...</div>;
+  // While loading auth state, show a loading screen.
+  // If user is found, the useEffect will redirect, so this prevents form flicker.
+  if (loading || user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div>Loading...</div>
+      </div>
+    );
   }
 
-  if (user) {
-    return null;
-  }
-
+  // Only show the login form if not loading and no user is found.
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
       <div className="w-full max-w-xs">
@@ -59,6 +65,7 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={isSigningIn}
           />
           <Input
             type="password"
@@ -66,9 +73,10 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={isSigningIn}
           />
-          <Button type="submit" className="w-full">
-            Sign In
+          <Button type="submit" className="w-full" disabled={isSigningIn}>
+            {isSigningIn ? 'Signing In...' : 'Sign In'}
           </Button>
         </form>
       </div>
