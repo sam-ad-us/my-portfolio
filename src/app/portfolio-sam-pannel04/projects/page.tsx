@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { PlusCircle, Trash2, Edit } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AddProjectDialog } from "./add-project-dialog";
+import { EditProjectDialog } from "./edit-project-dialog";
 import { useState, useEffect } from "react";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -30,7 +31,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function ManageProjectsPage() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -86,8 +87,8 @@ export default function ManageProjectsPage() {
     <div className="container mx-auto py-12 px-6">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Manage Projects</h1>
-        <AddProjectDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-           <Button onClick={() => setIsDialogOpen(true)}>
+        <AddProjectDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+           <Button onClick={() => setIsAddDialogOpen(true)}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Project
             </Button>
         </AddProjectDialog>
@@ -116,6 +117,11 @@ export default function ManageProjectsPage() {
                   <TableCell className="font-medium">{project.title}</TableCell>
                   <TableCell>{project.techStack.join(', ')}</TableCell>
                   <TableCell className="text-right">
+                    <EditProjectDialog project={project}>
+                      <Button variant="ghost" size="icon">
+                        <Edit className="h-4 w-4 text-primary" />
+                      </Button>
+                    </EditProjectDialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon">
