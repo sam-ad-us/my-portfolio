@@ -3,7 +3,6 @@
 import { addDoc, collection, deleteDoc, doc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { revalidatePath } from 'next/cache';
-import { z } from 'zod';
 import { db, storage } from '@/lib/firebase';
 
 export type ProjectFormState = {
@@ -24,14 +23,9 @@ export async function addProject(
     const imageFile = formData.get('imageFile') as File;
     const imageUrlFromForm = formData.get('imageUrl') as string;
 
-    // Basic server-side validation
     if (!title || !description || !techStack) {
       return { success: false, message: 'Title, Description, and Tech Stack are required.' };
     }
-    if (!imageUrlFromForm && (!imageFile || imageFile.size === 0)) {
-        return { success: false, message: 'Either an Image URL or an Image File must be provided.' };
-    }
-
 
     let finalImageUrl = imageUrlFromForm;
 
@@ -49,7 +43,7 @@ export async function addProject(
     }
 
     if (!finalImageUrl) {
-        return { success: false, message: 'Image is required but could not be processed.' };
+        return { success: false, message: 'An image URL or an uploaded image file is required.' };
     }
     
     const techStackArray = techStack.split(',').map((tech) => tech.trim());
@@ -89,8 +83,13 @@ export async function deleteProject(projectId: string, imageUrl: string): Promis
     await deleteDoc(doc(db, 'projects', projectId));
 
     if (imageUrl && imageUrl.includes('firebasestorage.googleapis.com')) {
-      const imageRef = ref(storage, imageUrl);
-      await deleteObject(imageRef);
+      try {
+        const imageRef = ref(storage, imageUrl);
+        await deleteObject(imageRef);
+      } catch (storageError) {
+        console.warn(`Could not delete image from storage: ${imageUrl}. It might have been already deleted or the URL is incorrect.`, storageError);
+        // We don't block the success of the overall delete operation if only image deletion fails.
+      }
     }
 
     revalidatePath('/portfolio-sam-pannel04/projects');
