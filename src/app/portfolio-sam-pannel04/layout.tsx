@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { SidebarProvider, Sidebar, SidebarInset, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
-import { LayoutDashboard, FileText, Wrench, UserCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Wrench, UserCircle, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -31,7 +31,7 @@ export default function AdminLayout({
     }
 
     if (!user) {
-      router.push('/portfolio-sam-pannel04/login');
+      router.push('/login');
       return;
     }
 
@@ -48,18 +48,18 @@ export default function AdminLayout({
     }
   }, [user, loading, router, toast]);
 
+  const handleSignOut = async () => {
+    await auth.signOut();
+    router.push('/login');
+  };
+  
   if (loading || !isAuthorized) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div>{loading ? 'Loading...' : 'Authorizing...'}</div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-foreground">{loading ? 'Loading...' : 'Authorizing...'}</div>
       </div>
     );
   }
-
-  const handleSignOut = async () => {
-    await auth.signOut();
-    router.push('/portfolio-sam-pannel04/login');
-  };
 
   const navItems = [
     { href: '/portfolio-sam-pannel04', label: 'Dashboard', icon: LayoutDashboard },
@@ -69,32 +69,37 @@ export default function AdminLayout({
   ];
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <div className="flex h-full flex-col">
-          <div className="p-4">
-            <h2 className="text-xl font-semibold">Admin Panel</h2>
-          </div>
-          <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton asChild isActive={pathname === item.href}>
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-          <div className="mt-auto p-4">
-             <Button onClick={handleSignOut} className="w-full">Sign Out</Button>
-          </div>
-        </div>
-      </Sidebar>
-      <SidebarInset>
-          {children}
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="bg-muted/40">
+        <SidebarProvider>
+        <Sidebar>
+            <div className="flex h-full flex-col">
+            <div className="p-4">
+                <h2 className="text-xl font-semibold">Admin Panel</h2>
+            </div>
+            <SidebarMenu>
+                {navItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton asChild isActive={pathname === item.href}>
+                    <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                    </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+            <div className="mt-auto p-4">
+                <Button onClick={handleSignOut} variant="outline" className="w-full">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                </Button>
+            </div>
+            </div>
+        </Sidebar>
+        <SidebarInset>
+            {children}
+        </SidebarInset>
+        </SidebarProvider>
+    </div>
   );
 }

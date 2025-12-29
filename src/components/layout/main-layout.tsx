@@ -7,17 +7,17 @@ import Footer from '@/components/layout/footer';
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdminPage = pathname.startsWith('/portfolio-sam-pannel04');
-  const isLoginPage = pathname === '/portfolio-sam-pannel04/login';
+  const isLoginPage = pathname === '/login';
 
-  if (isLoginPage) {
+  if (isLoginPage || isAdminPage) {
     return <main>{children}</main>;
   }
 
   return (
     <div className="relative z-10 flex min-h-screen flex-col">
-      {!isAdminPage && <Header />}
+      <Header />
       <main className="flex-1">{children}</main>
-      {!isAdminPage && <Footer />}
+      <Footer />
     </div>
   );
 }
