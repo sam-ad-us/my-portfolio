@@ -1,18 +1,14 @@
 'use server';
 
-import { addDoc, collection, deleteDoc, doc } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
-import { db } from '@/lib/firebase';
-import { uploadImage } from '@/ai/flows/upload-image-flow';
 import ImageKit from 'imagekit';
+import { adminDb } from '@/lib/firebase-admin';
 
-// This is for deletion. We need a server-side instance.
 const imagekit = new ImageKit({
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
   urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
 });
-
 
 export type ProjectFormState = {
   success: boolean;
@@ -48,14 +44,13 @@ export async function addProject(
 
     if (imageFile && imageFile.size > 0) {
        try {
-        const dataUri = await fileToDataUri(imageFile);
-        const result = await uploadImage({ dataUri });
-        
-        if (result.url) {
-            finalImageUrl = result.url;
-        } else {
-            return { success: false, message: 'Failed to get image URL from ImageKit.' };
-        }
+        const buffer = Buffer.from(await imageFile.arrayBuffer());
+        const response = await imagekit.upload({
+            file: buffer,
+            fileName: imageFile.name,
+            folder: '/portfolio-projects/',
+        });
+        finalImageUrl = response.url;
        } catch (uploadError) {
          console.error("SERVER_ACTION_ERROR (ImageKit Upload):", uploadError);
          const errorMessage = uploadError instanceof Error ? uploadError.message : 'An unknown error occurred during file upload.';
@@ -70,7 +65,7 @@ export async function addProject(
     const techStackArray = techStack.split(',').map((tech) => tech.trim());
     
     try {
-      await addDoc(collection(db, 'projects'), {
+      await adminDb.collection('projects').add({
         title,
         description,
         techStack: techStackArray,
@@ -100,7 +95,7 @@ export async function addProject(
 
 export async function deleteProject(projectId: string, imageUrl: string): Promise<{ success: boolean; message: string }> {
   try {
-    await deleteDoc(doc(db, 'projects', projectId));
+    await adminDb.collection('projects').doc(projectId).delete();
 
     if (imageUrl && imageUrl.includes(process.env.IMAGEKIT_URL_ENDPOINT!)) {
       try {
