@@ -47,20 +47,22 @@ export function AddProjectDialog({ children, open, onOpenChange }: AddProjectDia
     const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
-        if (state.success) {
-            toast({
-                title: "Success",
-                description: state.message,
-            });
-            onOpenChange(false);
-            formRef.current?.reset();
-            setIsUploading(false);
-        } else if (state.message && !state.success) {
-             toast({
-                title: "Error",
-                description: state.message,
-                variant: 'destructive'
-            });
+        if (state.message) {
+            if (state.success) {
+                toast({
+                    title: "Success",
+                    description: state.message,
+                });
+                onOpenChange(false);
+                formRef.current?.reset();
+                setIsUploading(false);
+            } else {
+                toast({
+                    title: "Error",
+                    description: state.message,
+                    variant: 'destructive'
+                });
+            }
         }
     }, [state, onOpenChange, toast]);
 
@@ -122,7 +124,8 @@ export function AddProjectDialog({ children, open, onOpenChange }: AddProjectDia
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="imageFile" className="text-right">Project Image</Label>
                     <Input id="imageFile" name="imageFile" type="file" accept="image/*" className="col-span-3" />
-                    {state.errors?.imageUrl && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.imageUrl[0]}</p>}
+                    {state.errors?.imageFile && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.imageFile[0]}</p>}
+                     {state.errors?.imageUrl && !state.errors.imageFile && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.imageUrl[0]}</p>}
                 </div>
             ) : (
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -132,7 +135,6 @@ export function AddProjectDialog({ children, open, onOpenChange }: AddProjectDia
                 </div>
             )}
             
-
              <DialogFooter>
                 <DialogClose asChild>
                     <Button type="button" variant="secondary">Cancel</Button>

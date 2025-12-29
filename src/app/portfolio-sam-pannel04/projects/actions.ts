@@ -17,7 +17,7 @@ const projectFormSchema = z.object({
   githubLink: z.string().url('Invalid URL format').or(z.literal('')),
   imageUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
   imageFile: z
-    .instanceof(File)
+    .any()
     .optional()
     .refine(
       (file) => !file || file.size <= MAX_FILE_SIZE,
@@ -29,7 +29,7 @@ const projectFormSchema = z.object({
     ),
 }).refine(data => data.imageUrl || data.imageFile, {
   message: "Either an image URL or an image file must be provided.",
-  path: ["imageUrl"],
+  path: ["imageUrl"], // Point error to a relevant field
 });
 
 export type ProjectFormState = {
@@ -79,6 +79,7 @@ export async function addProject(
         return {
             success: false,
             message: 'Image is required. Please provide a URL or upload a file.',
+            errors: { imageUrl: ['Image is required.'] }
         };
     }
 
@@ -105,11 +106,9 @@ export async function addProject(
 
 export async function deleteProject(projectId: string, imageUrl: string): Promise<{ success: boolean; message: string }> {
   try {
-    // Delete the document from Firestore
     await deleteDoc(doc(db, 'projects', projectId));
 
-    // Delete the image from Firebase Storage
-    if (imageUrl.includes('firebasestorage.googleapis.com')) {
+    if (imageUrl && imageUrl.includes('firebasestorage.googleapis.com')) {
       const storage = getStorage();
       const imageRef = ref(storage, imageUrl);
       await deleteObject(imageRef);
