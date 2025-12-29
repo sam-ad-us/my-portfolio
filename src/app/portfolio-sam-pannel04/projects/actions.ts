@@ -2,8 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { adminDb } from '@/lib/firebase-admin';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { uploadImage } from '@/ai/flows/upload-image-flow';
 
 export type ProjectFormState = {
   success: boolean;
@@ -31,17 +30,17 @@ export async function addProject(
 
     if (imageFile && imageFile.size > 0) {
       try {
-        const storageRef = ref(storage, `portfolio-projects/${Date.now()}_${imageFile.name}`);
-        const snapshot = await uploadBytes(storageRef, imageFile);
-        finalImageUrl = await getDownloadURL(snapshot.ref);
+        const arrayBuffer = await imageFile.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const dataUri = `data:${imageFile.type};base64,${buffer.toString('base64')}`;
+        
+        const uploadResult = await uploadImage({ dataUri });
+        finalImageUrl = uploadResult.url;
+
       } catch (uploadError: any) {
-         if (uploadError.code === 'storage/unknown') {
-           console.error("CORS_ERROR (Firebase Storage):", "Please configure CORS on your Firebase Storage bucket.");
-           return { success: false, message: 'Image upload failed due to a server configuration issue. Please check the CORS settings on your Firebase Storage bucket.'};
-         }
-        console.error("SERVER_ACTION_ERROR (Firebase Storage Upload):", uploadError);
-        const errorMessage = uploadError.message || 'An unknown error occurred during file upload.';
-        return { success: false, message: `Failed to upload image. ${errorMessage}` };
+         console.error("SERVER_ACTION_ERROR (ImageKit Upload):", uploadError);
+         const errorMessage = uploadError.message || 'An unknown error occurred during file upload.';
+         return { success: false, message: `Failed to upload image. ${errorMessage}` };
       }
     }
 
@@ -79,23 +78,13 @@ export async function addProject(
   }
 }
 
-
 export async function deleteProject(projectId: string, imageUrl: string): Promise<{ success: boolean; message: string }> {
   try {
     await adminDb.collection('projects').doc(projectId).delete();
 
-    if (imageUrl) {
-      try {
-        const imageRef = ref(storage, imageUrl);
-        await deleteObject(imageRef);
-      } catch (storageError: any) {
-        if (storageError.code === 'storage/object-not-found') {
-          console.warn(`Image not found in Firebase Storage, but proceeding with Firestore deletion: ${imageUrl}`);
-        } else {
-           throw storageError;
-        }
-      }
-    }
+    // ImageKit deletion is not implemented in the provided flow, 
+    // but if it were, the logic would go here.
+    // For now, we just delete the Firestore document.
 
     revalidatePath('/portfolio-sam-pannel04/projects');
     revalidatePath('/projects');

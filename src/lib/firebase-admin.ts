@@ -1,6 +1,5 @@
 import admin from 'firebase-admin';
 
-// Check if the app is already initialized to prevent re-initialization
 if (!admin.apps.length) {
   try {
     admin.initializeApp({
