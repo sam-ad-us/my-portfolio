@@ -87,29 +87,24 @@ export function AddProjectDialog({ children, open, onOpenChange }: AddProjectDia
         <form action={formAction} ref={formRef} className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="title" className="text-right">Title</Label>
-                <Input id="title" name="title" className="col-span-3" />
-                 {state.errors?.title && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.title[0]}</p>}
+                <Input id="title" name="title" className="col-span-3" required />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="description" className="text-right">Description</Label>
-                <Textarea id="description" name="description" className="col-span-3" />
-                {state.errors?.description && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.description[0]}</p>}
+                <Textarea id="description" name="description" className="col-span-3" required/>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="techStack" className="text-right">Tech Stack</Label>
-                <Input id="techStack" name="techStack" placeholder="React, Next.js, ..." className="col-span-3" />
+                <Input id="techStack" name="techStack" placeholder="React, Next.js, ..." className="col-span-3" required/>
                 <p className="col-span-4 text-xs text-muted-foreground text-right">Comma-separated values.</p>
-                {state.errors?.techStack && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.techStack[0]}</p>}
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="liveLink" className="text-right">Project Link</Label>
                 <Input id="liveLink" name="liveLink" placeholder="https://..." className="col-span-3" />
-                 {state.errors?.liveLink && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.liveLink[0]}</p>}
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="githubLink" className="text-right">Code Link</Label>
                 <Input id="githubLink" name="githubLink" placeholder="https://github.com/..." className="col-span-3" />
-                 {state.errors?.githubLink && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.githubLink[0]}</p>}
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
@@ -124,14 +119,11 @@ export function AddProjectDialog({ children, open, onOpenChange }: AddProjectDia
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="imageFile" className="text-right">Project Image</Label>
                     <Input id="imageFile" name="imageFile" type="file" accept="image/*" className="col-span-3" />
-                    {state.errors?.imageFile && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.imageFile[0]}</p>}
-                     {state.errors?.imageUrl && !state.errors.imageFile && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.imageUrl[0]}</p>}
                 </div>
             ) : (
                 <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="imageUrl" className="text-right">Image URL</Label>
                     <Input id="imageUrl" name="imageUrl" placeholder="https://..." className="col-span-3" />
-                    {state.errors?.imageUrl && <p className="col-span-4 text-red-500 text-xs text-right">{state.errors.imageUrl[0]}</p>}
                 </div>
             )}
             
