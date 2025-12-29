@@ -3,6 +3,7 @@ import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Section } from '@/components/section';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 type Skill = {
   id: string;
@@ -42,14 +43,25 @@ async function getSkills(): Promise<{ techSkills: Skill[]; nonTechSkills: Skill[
   }
 }
 
-function SkillCard({ skill, colorClass }: { skill: Skill, colorClass: string }) {
+function SkillCard({ skill }: { skill: Skill }) {
+    const isTech = skill.type === 'tech';
+    const colorClass = isTech ? 'hover:shadow-primary/20' : 'hover:shadow-accent/20';
+
     return (
         <Card
-            className={`group transform-gpu bg-card/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${colorClass}`}
+            className={cn(
+                `group transform-gpu bg-card/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg`,
+                colorClass
+            )}
         >
             <CardContent className="flex flex-col items-center justify-center gap-4 p-6">
                  <div
-                    className="h-12 w-12 text-primary drop-shadow-[0_0_8px_hsl(var(--primary))] transition-transform duration-300 group-hover:scale-110"
+                    className={cn(
+                        'h-12 w-12 transition-transform duration-300 group-hover:scale-110',
+                        isTech 
+                            ? 'text-primary drop-shadow-[0_0_8px_hsl(var(--primary))]'
+                            : 'text-accent drop-shadow-[0_0_8px_hsl(var(--accent))]'
+                    )}
                     dangerouslySetInnerHTML={{ __html: skill.svg }}
                 />
                 <span className="font-medium text-foreground/90">{skill.name}</span>
@@ -75,7 +87,7 @@ export default async function SkillsPage() {
         <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
             {techSkills.length > 0 ? (
                 techSkills.map((skill) => (
-                    <SkillCard key={skill.id} skill={skill} colorClass="hover:shadow-primary/20" />
+                    <SkillCard key={skill.id} skill={skill} />
                 ))
             ) : (
                 <p className="col-span-full text-center text-muted-foreground">No tech skills added yet.</p>
@@ -94,7 +106,7 @@ export default async function SkillsPage() {
         <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-4">
            {nonTechSkills.length > 0 ? (
                 nonTechSkills.map((skill) => (
-                    <SkillCard key={skill.id} skill={skill} colorClass="hover:shadow-accent/20" />
+                    <SkillCard key={skill.id} skill={skill} />
                 ))
             ) : (
                  <p className="col-span-full text-center text-muted-foreground">No professional skills added yet.</p>
