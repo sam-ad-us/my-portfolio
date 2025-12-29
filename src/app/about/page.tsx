@@ -6,7 +6,7 @@ import { Download, FolderKanban } from 'lucide-react';
 import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { type UserProfile } from '@/types/user-profile';
+import { type UserProfile, type EducationEntry } from '@/types/user-profile';
 
 async function getUserProfile(): Promise<UserProfile | null> {
     const adminUid = 'emM4KrlWNMR9Vhh7uCMmH5D6t362';
@@ -41,25 +41,18 @@ export default async function AboutPage() {
     );
   };
   
-  const EducationBlock = ({ education }: { education?: string }) => {
-    if (!education) return null;
-
-    const sections = education.split('\n\n');
+  const EducationBlock = ({ education }: { education?: EducationEntry[] }) => {
+    if (!education || education.length === 0) return null;
 
     return (
-         <div className="mt-4 space-y-4">
-            {sections.map((section, index) => {
-                const lines = section.split('\n');
-                if (lines.length < 2) return null;
-                const [degree, institution, dates] = lines;
-                return (
-                     <div key={index} className="rounded-lg border bg-card/50 p-4">
-                        <h3 className="text-xl font-semibold text-foreground">{degree}</h3>
-                        <p className="text-md text-foreground/80">{institution}</p>
-                        {dates && <p className="text-sm text-muted-foreground">{dates}</p>}
-                    </div>
-                )
-            })}
+         <div className="mt-6 space-y-4">
+            {education.map((entry) => (
+                 <div key={entry.id} className="rounded-lg border bg-card/50 p-4 shadow-sm transition-all hover:shadow-md hover:shadow-primary/10">
+                    <h3 className="text-xl font-semibold text-foreground">{entry.degree}</h3>
+                    <p className="text-md text-foreground/80">{entry.institution}</p>
+                    <p className="text-sm text-muted-foreground">{entry.dates}</p>
+                </div>
+            ))}
         </div>
     )
   }
@@ -107,7 +100,7 @@ export default async function AboutPage() {
             <h1 className="font-headline text-4xl font-bold text-primary">About Me</h1>
             <Paragraphs text={profile?.introduction} />
           </div>
-          {profile?.education && (
+          {profile?.education && profile.education.length > 0 && (
             <div>
               <h2 className="font-headline text-3xl font-bold text-primary">Education</h2>
               <EducationBlock education={profile.education} />

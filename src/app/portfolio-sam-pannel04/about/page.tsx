@@ -2,7 +2,6 @@
 'use client';
 
 import { useEffect, useRef, useState, useActionState } from 'react';
-import { adminDb } from '@/lib/firebase-admin';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -14,8 +13,9 @@ import { useToast } from '@/hooks/use-toast';
 import { updateUserProfile, type UserProfileState } from './actions';
 import { useFormStatus } from 'react-dom';
 import { Switch } from '@/components/ui/switch';
-import { type UserProfile } from '@/types/user-profile';
+import { type UserProfile, type EducationEntry } from '@/types/user-profile';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PlusCircle, Trash2 } from 'lucide-react';
 
 const initialState: UserProfileState = {
   success: false,
@@ -33,6 +33,7 @@ function SubmitButton() {
 
 export default function ManageAboutPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [education, setEducation] = useState<EducationEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [state, formAction] = useActionState(updateUserProfile, initialState);
   const formRef = useRef<HTMLFormElement>(null);
@@ -47,7 +48,9 @@ export default function ManageAboutPage() {
         const docRef = doc(db, 'user_profiles', adminUid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setProfile(docSnap.data() as UserProfile);
+          const data = docSnap.data() as UserProfile;
+          setProfile(data);
+          setEducation(data.education || []);
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -80,6 +83,21 @@ export default function ManageAboutPage() {
       }
     }
   }, [state, toast]);
+
+  const addEducationEntry = () => {
+    setEducation([...education, { id: `new-${Date.now()}`, degree: '', institution: '', dates: '' }]);
+  };
+
+  const removeEducationEntry = (id: string) => {
+    setEducation(education.filter(entry => entry.id !== id));
+  };
+  
+  const handleEducationChange = (index: number, field: keyof EducationEntry, value: string) => {
+    const newEducation = [...education];
+    (newEducation[index] as any)[field] = value;
+    setEducation(newEducation);
+  };
+
 
   if (loading) {
     return (
@@ -133,10 +151,63 @@ export default function ManageAboutPage() {
               <Label htmlFor="introduction">Introduction</Label>
               <Textarea id="introduction" name="introduction" placeholder="A brief introduction about yourself..." className="min-h-32" defaultValue={profile?.introduction} required />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="education">Education</Label>
-              <Textarea id="education" name="education" placeholder="Your educational background..." className="min-h-24" defaultValue={profile?.education} />
+            
+            <div className="space-y-4 rounded-md border p-4">
+                 <div className='flex justify-between items-center'>
+                    <h3 className="text-lg font-medium">Education</h3>
+                    <Button type="button" variant="outline" size="sm" onClick={addEducationEntry}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Education
+                    </Button>
+                 </div>
+                <div className='space-y-4'>
+                 {education.map((entry, index) => (
+                    <div key={entry.id} className="space-y-3 rounded-lg border bg-background/50 p-3 relative">
+                        <input type="hidden" name={`education[${index}].id`} value={entry.id} />
+                        <div className="space-y-1">
+                            <Label htmlFor={`education-degree-${index}`}>Degree</Label>
+                            <Input 
+                                id={`education-degree-${index}`} 
+                                name={`education[${index}].degree`}
+                                placeholder="e.g., Bachelor of Science" 
+                                value={entry.degree}
+                                onChange={(e) => handleEducationChange(index, 'degree', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor={`education-institution-${index}`}>Institution</Label>
+                            <Input 
+                                id={`education-institution-${index}`}
+                                name={`education[${index}].institution`}
+                                placeholder="e.g., University of Example"
+                                value={entry.institution}
+                                onChange={(e) => handleEducationChange(index, 'institution', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor={`education-dates-${index}`}>Date Range</Label>
+                            <Input 
+                                id={`education-dates-${index}`}
+                                name={`education[${index}].dates`} 
+                                placeholder="e.g., 2020-2024 or In Progress (2025-2028)"
+                                value={entry.dates} 
+                                onChange={(e) => handleEducationChange(index, 'dates', e.target.value)}
+                           />
+                        </div>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-1 right-1 text-destructive"
+                            onClick={() => removeEducationEntry(entry.id)}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                 ))}
+                 </div>
             </div>
+
              <div className="space-y-2">
               <Label htmlFor="passions">Passions / Hobbies</Label>
               <Textarea id="passions" name="passions" placeholder="What are you passionate about outside of work?" className="min-h-24" defaultValue={profile?.passions} />

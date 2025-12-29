@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { adminDb } from '@/lib/firebase-admin';
 import { uploadImage } from '@/ai/flows/upload-image-flow';
 import { FieldValue } from 'firebase-admin/firestore';
+import { type EducationEntry } from '@/types/user-profile';
 
 export type UserProfileState = {
   success: boolean;
@@ -21,7 +22,6 @@ export async function updateUserProfile(
     const name = formData.get('name') as string;
     const role = formData.get('role') as string;
     const introduction = formData.get('introduction') as string;
-    const education = formData.get('education') as string;
     const passions = formData.get('passions') as string;
     const githubLink = formData.get('githubLink') as string;
     const linkedinLink = formData.get('linkedinLink') as string;
@@ -29,6 +29,20 @@ export async function updateUserProfile(
     const instagramLink = formData.get('instagramLink') as string;
     const imageFile = formData.get('imageFile') as File | null;
     let imageUrlFromForm = formData.get('profilePicture') as string | null;
+
+    // Handle education entries
+    const educationEntries: EducationEntry[] = [];
+    let i = 0;
+    while (formData.has(`education[${i}].degree`)) {
+        const degree = formData.get(`education[${i}].degree`) as string;
+        const institution = formData.get(`education[${i}].institution`) as string;
+        const dates = formData.get(`education[${i}].dates`) as string;
+        const id = formData.get(`education[${i}].id`) as string;
+        if (degree && institution && dates) {
+            educationEntries.push({ id, degree, institution, dates });
+        }
+        i++;
+    }
 
     if (!name || !role || !introduction) {
       return { success: false, message: 'Name, Role, and Introduction are required.' };
@@ -54,7 +68,7 @@ export async function updateUserProfile(
       name,
       role,
       introduction,
-      education,
+      education: educationEntries,
       passions,
       githubLink,
       linkedinLink,

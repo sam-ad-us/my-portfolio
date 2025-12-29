@@ -133,8 +133,26 @@
           "format": "uri"
         },
         "education": {
-          "type": "string",
-          "description": "Information about the user's education."
+          "type": "array",
+          "description": "Information about the user's education.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "degree": {
+                "type": "string"
+              },
+              "institution": {
+                "type": "string"
+              },
+              "dates": {
+                "type": "string"
+              }
+            },
+            "required": ["id", "degree", "institution", "dates"]
+          }
         },
         "passions": {
           "type": "string",
