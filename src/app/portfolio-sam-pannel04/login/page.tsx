@@ -16,19 +16,31 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isSigningIn, setIsSigningIn] = useState(false);
   const { toast } = useToast();
+  const adminUid = 'emM4KrlWNMR9Vhh7uCMmH5D6t362';
 
   useEffect(() => {
     if (!loading && user) {
-      router.replace('/portfolio-sam-pannel04');
+      if (user.uid === adminUid) {
+        router.replace('/portfolio-sam-pannel04');
+      } else {
+        // If a non-admin user is somehow logged in, show an error and prevent access.
+        toast({
+          title: 'Not Authorized',
+          description: 'You do not have permission to access this area.',
+          variant: 'destructive',
+        });
+        // Optional: sign them out.
+        auth.signOut();
+      }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, toast]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSigningIn(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // The useEffect will handle the redirect
+      // The useEffect will handle the redirect upon successful auth state change.
     } catch (error) {
       console.error("Error signing in: ", error);
       toast({
@@ -36,13 +48,11 @@ export default function LoginPage() {
         description: 'Please check your email and password.',
         variant: 'destructive',
       });
-       setIsSigningIn(false);
+      setIsSigningIn(false);
     }
   };
-  
-  // While loading auth state, show a loading screen.
-  // If user is found, the useEffect will redirect, so this prevents form flicker.
-  if (loading || user) {
+
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div>Loading...</div>
@@ -50,7 +60,16 @@ export default function LoginPage() {
     );
   }
 
-  // Only show the login form if not loading and no user is found.
+  // If we are done loading and there is a user, the useEffect will handle the redirect.
+  // This state shows a redirecting message.
+  if (user) {
+    return (
+        <div className="flex min-h-screen items-center justify-center">
+            <div>Redirecting...</div>
+        </div>
+    )
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
       <div className="w-full max-w-xs">
