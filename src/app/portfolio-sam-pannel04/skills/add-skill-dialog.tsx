@@ -12,14 +12,14 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useFormStatus } from 'react-dom';
 import { addSkill, type SkillFormState } from './actions';
-import { useEffect, useRef, useActionState } from "react";
+import { useEffect, useRef, useActionState, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { predefinedSkills } from "./predefined-skills";
 
 type AddSkillDialogProps = {
   children: React.ReactNode;
@@ -45,6 +45,7 @@ export function AddSkillDialog({ children, open, onOpenChange }: AddSkillDialogP
     const [state, formAction] = useActionState(addSkill, initialState);
     const formRef = useRef<HTMLFormElement>(null);
     const { toast } = useToast();
+    const [selectedSkillName, setSelectedSkillName] = useState<string | undefined>();
 
     useEffect(() => {
         if (state.message) {
@@ -55,6 +56,7 @@ export function AddSkillDialog({ children, open, onOpenChange }: AddSkillDialogP
                 });
                 onOpenChange(false);
                 formRef.current?.reset();
+                setSelectedSkillName(undefined);
             } else {
                 toast({
                     title: "Error",
@@ -68,9 +70,12 @@ export function AddSkillDialog({ children, open, onOpenChange }: AddSkillDialogP
     const handleOpenChange = (isOpen: boolean) => {
         if (!isOpen) {
             formRef.current?.reset();
+            setSelectedSkillName(undefined);
         }
         onOpenChange(isOpen);
     }
+    
+    const selectedSkillPreview = predefinedSkills.find(s => s.name === selectedSkillName);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -79,18 +84,40 @@ export function AddSkillDialog({ children, open, onOpenChange }: AddSkillDialogP
         <DialogHeader>
           <DialogTitle>Add New Skill</DialogTitle>
           <DialogDescription>
-            Fill in the details below to add a new skill.
+            Select a skill from the list to add it to your portfolio.
           </DialogDescription>
         </DialogHeader>
         <form action={formAction} ref={formRef} className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Name</Label>
-                <Input id="name" name="name" className="col-span-3" required />
+                <Label htmlFor="name" className="text-right">Skill</Label>
+                <div className="col-span-3">
+                    <Select name="name" required onValueChange={setSelectedSkillName}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a skill" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {predefinedSkills.map(skill => (
+                                <SelectItem key={skill.name} value={skill.name}>
+                                    {skill.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="svg" className="text-right">SVG Icon</Label>
-                <Textarea id="svg" name="svg" placeholder="<svg>...</svg>" className="col-span-3" required/>
-            </div>
+
+            {selectedSkillPreview && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">Icon Preview</Label>
+                    <div className="col-span-3 flex items-center justify-start rounded-md border p-4">
+                        <div
+                            className="h-10 w-10 text-primary"
+                            dangerouslySetInnerHTML={{ __html: selectedSkillPreview.svg }}
+                        />
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Type</Label>
               <RadioGroup name="type" defaultValue="tech" className="col-span-3 flex gap-4">

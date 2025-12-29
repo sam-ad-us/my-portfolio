@@ -12,8 +12,6 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useFormStatus } from 'react-dom';
 import { updateSkill, type SkillFormState } from './actions';
@@ -21,6 +19,8 @@ import { useEffect, useRef, useActionState, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { type Skill } from "./skill-types";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { predefinedSkills } from "./predefined-skills";
 
 
 type EditSkillDialogProps = {
@@ -47,6 +47,8 @@ export function EditSkillDialog({ children, skill }: EditSkillDialogProps) {
     const [state, formAction] = useActionState(updateSkill, initialState);
     const formRef = useRef<HTMLFormElement>(null);
     const { toast } = useToast();
+    const [selectedSkillName, setSelectedSkillName] = useState<string | undefined>(skill.name);
+
 
     useEffect(() => {
         if (state.message) {
@@ -66,8 +68,18 @@ export function EditSkillDialog({ children, skill }: EditSkillDialogProps) {
         }
     }, [state, toast]);
 
+    const handleOpenChange = (isOpen: boolean) => {
+        if (isOpen) {
+            setSelectedSkillName(skill.name);
+        }
+        setOpen(isOpen);
+    }
+    
+    const selectedSkillPreview = predefinedSkills.find(s => s.name === selectedSkillName);
+
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
@@ -78,14 +90,36 @@ export function EditSkillDialog({ children, skill }: EditSkillDialogProps) {
         </DialogHeader>
         <form action={formAction} ref={formRef} className="grid gap-4 py-4">
             <input type="hidden" name="skillId" value={skill.id} />
-            <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Name</Label>
-                <Input id="name" name="name" className="col-span-3" defaultValue={skill.name} required />
+             <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">Skill</Label>
+                <div className="col-span-3">
+                    <Select name="name" required onValueChange={setSelectedSkillName} defaultValue={skill.name}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a skill" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {predefinedSkills.map(skill => (
+                                <SelectItem key={skill.name} value={skill.name}>
+                                    {skill.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="svg" className="text-right">SVG Icon</Label>
-                <Textarea id="svg" name="svg" className="col-span-3" defaultValue={skill.svg} required/>
-            </div>
+
+            {selectedSkillPreview && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">Icon Preview</Label>
+                    <div className="col-span-3 flex items-center justify-start rounded-md border p-4">
+                        <div
+                            className="h-10 w-10 text-primary"
+                            dangerouslySetInnerHTML={{ __html: selectedSkillPreview.svg }}
+                        />
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">Type</Label>
               <RadioGroup name="type" defaultValue={skill.type} className="col-span-3 flex gap-4">

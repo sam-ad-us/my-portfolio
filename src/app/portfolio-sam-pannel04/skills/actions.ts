@@ -3,6 +3,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { adminDb } from '@/lib/firebase-admin';
+import { predefinedSkills } from './predefined-skills';
 
 export type SkillFormState = {
   success: boolean;
@@ -15,16 +16,21 @@ export async function addSkill(
 ): Promise<SkillFormState> {
   try {
     const name = formData.get('name') as string;
-    const svg = formData.get('svg') as string;
     const type = formData.get('type') as 'tech' | 'non-tech';
 
-    if (!name || !svg || !type) {
-      return { success: false, message: 'Name, SVG Icon, and Type are required.' };
+    if (!name || !type) {
+      return { success: false, message: 'Skill Name and Type are required.' };
+    }
+    
+    const selectedSkill = predefinedSkills.find(skill => skill.name === name);
+
+    if (!selectedSkill) {
+      return { success: false, message: 'Selected skill not found.' };
     }
 
     await adminDb.collection('skills').add({
-      name,
-      svg,
+      name: selectedSkill.name,
+      svg: selectedSkill.svg,
       type,
       createdAt: new Date(),
     });
@@ -46,17 +52,22 @@ export async function updateSkill(
   try {
     const skillId = formData.get('skillId') as string;
     const name = formData.get('name') as string;
-    const svg = formData.get('svg') as string;
     const type = formData.get('type') as 'tech' | 'non-tech';
 
-    if (!skillId || !name || !svg || !type) {
-      return { success: false, message: 'Skill ID, Name, SVG Icon, and Type are required.' };
+    if (!skillId || !name || !type) {
+      return { success: false, message: 'Skill ID, Name, and Type are required.' };
+    }
+    
+    const selectedSkill = predefinedSkills.find(skill => skill.name === name);
+
+    if (!selectedSkill) {
+      return { success: false, message: 'Selected skill not found.' };
     }
 
     const skillRef = adminDb.collection('skills').doc(skillId);
     await skillRef.update({
-      name,
-      svg,
+      name: selectedSkill.name,
+      svg: selectedSkill.svg,
       type,
     });
 
