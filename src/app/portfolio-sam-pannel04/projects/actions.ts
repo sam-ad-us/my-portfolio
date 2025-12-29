@@ -1,7 +1,7 @@
 'use server';
 
-import { addDoc, collection } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { addDoc, collection, deleteDoc, doc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
@@ -100,5 +100,29 @@ export async function addProject(
     console.error('Error adding project:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';
     return { success: false, message: `Failed to add project. ${errorMessage}` };
+  }
+}
+
+export async function deleteProject(projectId: string, imageUrl: string): Promise<{ success: boolean; message: string }> {
+  try {
+    // Delete the document from Firestore
+    await deleteDoc(doc(db, 'projects', projectId));
+
+    // Delete the image from Firebase Storage
+    if (imageUrl.includes('firebasestorage.googleapis.com')) {
+      const storage = getStorage();
+      const imageRef = ref(storage, imageUrl);
+      await deleteObject(imageRef);
+    }
+
+    revalidatePath('/portfolio-sam-pannel04/projects');
+    revalidatePath('/projects');
+    revalidatePath('/');
+    
+    return { success: true, message: 'Project deleted successfully!' };
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';
+    return { success: false, message: `Failed to delete project. ${errorMessage}` };
   }
 }
