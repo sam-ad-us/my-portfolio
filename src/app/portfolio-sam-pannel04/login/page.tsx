@@ -23,13 +23,11 @@ export default function LoginPage() {
       if (user.uid === adminUid) {
         router.replace('/portfolio-sam-pannel04');
       } else {
-        // If a non-admin user is somehow logged in, show an error and prevent access.
         toast({
           title: 'Not Authorized',
           description: 'You do not have permission to access this area.',
           variant: 'destructive',
         });
-        // Optional: sign them out.
         auth.signOut();
       }
     }
@@ -60,8 +58,6 @@ export default function LoginPage() {
     );
   }
 
-  // If we are done loading and there is a user, the useEffect will handle the redirect.
-  // This state shows a redirecting message.
   if (user) {
     return (
         <div className="flex min-h-screen items-center justify-center">
